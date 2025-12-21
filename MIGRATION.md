@@ -23,9 +23,12 @@ This repo is meant to replace the current yadm-in-`$HOME` setup with explicit sy
 6. Apply:
    - `stow -vt ~ zsh git fzf scripts completions`
 
+Notes
+
+- `~/.git-themes` is commonly a pre-existing symlink (from the old setup). If stow reports “not owned by stow”, move it aside first (or remove it) and re-run stow for the `git` package.
+
 ## After migration
 
 - Use git in this repo normally (`git status`, `git commit`, `git push`).
 - Stow again after adding/removing files in packages.
 - Once you’re confident, you can stop using yadm (and later archive/remove it).
-
