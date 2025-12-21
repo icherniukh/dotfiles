@@ -8,7 +8,6 @@ Planned packages (initial set):
 - `git/` → `~/.gitconfig`, `~/.git-themes`
 - `fzf/` → `~/.config/fzf/fzf.zsh`
 - `scripts/` → `~/.scripts/*`
-- `completions/` → `~/.local/share/zsh/site-functions/*`
 
 Optional app config packages (can be stowed separately):
 

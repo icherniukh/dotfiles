@@ -16,12 +16,12 @@ This repo is meant to replace the current yadm-in-`$HOME` setup with explicit sy
    - `git clone git@github.com:icherniukh/dotfiles.git ~/proj/dotfiles-stow`
 4. Dry-run stow packages you want:
    - `cd ~/proj/dotfiles-stow`
-   - `stow -nvt ~ zsh git fzf scripts completions`
+   - `stow -nvt ~ zsh git fzf scripts`
 5. Resolve conflicts:
    - move conflicting files aside (recommended), then run again, or
    - `stow --adopt -vt ~ <package>` to convert existing real files into repo files + symlinks.
 6. Apply:
-   - `stow -vt ~ zsh git fzf scripts completions`
+   - `stow -vt ~ zsh git fzf scripts`
 
 Notes
 
@@ -30,7 +30,7 @@ Notes
 
 ## Rollback (if something breaks)
 
-1. Remove links: `cd ~/proj/dotfiles-stow && stow -Dvt ~ zsh git fzf scripts completions`
+1. Remove links: `cd ~/proj/dotfiles-stow && stow -Dvt ~ zsh git fzf scripts`
 2. Restore your moved-aside files from `~/proj/dotfiles-stow/local/pre-stow-*/` back into `$HOME`.
 
 ## After migration

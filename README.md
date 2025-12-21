@@ -15,8 +15,8 @@ This repo is a transparent, symlink-based dotfiles setup using GNU Stow.
 
 From the repo root:
 
-- Dry run: `stow -nvt ~ zsh git fzf scripts completions`
-- Apply: `stow -vt ~ zsh git fzf scripts completions`
+- Dry run: `stow -nvt ~ zsh git fzf scripts`
+- Apply: `stow -vt ~ zsh git fzf scripts`
 - Remove: `stow -Dvt ~ zsh`
 
 Optional packages: `wez ghostty helix lazygit lsd ripgrep starship procs yazi` (see `INVENTORY.md`).
@@ -49,5 +49,4 @@ Local-only notes/snapshots can live under `local/` (ignored by git).
 - `~/.config/zsh/secrets.zsh` — real secrets (local-only; not in git)
 - `~/.config/zsh/local.zsh` — per-machine overrides (local-only; not in git)
 - `~/.scripts/` — your scripts (tracked); synced into `~/.local/bin` by `~/.config/zsh/sync-scripts.zsh`
-- `~/.local/share/zsh/site-functions/` — custom completions
 - `~/.gitconfig` / `~/.git-themes` — git config and theme include
