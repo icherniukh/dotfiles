@@ -26,6 +26,12 @@ This repo is meant to replace the current yadm-in-`$HOME` setup with explicit sy
 Notes
 
 - `~/.git-themes` is commonly a pre-existing symlink (from the old setup). If stow reports “not owned by stow”, move it aside first (or remove it) and re-run stow for the `git` package.
+- If you keep secrets at `~/.config/zsh/secrets.zsh`, keep the `~/.config/zsh/` directory real and let stow link only the tracked files inside it.
+
+## Rollback (if something breaks)
+
+1. Remove links: `cd ~/proj/dotfiles-stow && stow -Dvt ~ zsh git fzf scripts completions`
+2. Restore your moved-aside files from `~/proj/dotfiles-stow/local/pre-stow-*/` back into `$HOME`.
 
 ## After migration
 
