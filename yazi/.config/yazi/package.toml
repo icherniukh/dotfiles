@@ -1,0 +1,104 @@
+[[plugin.deps]]
+use = "pirafrank/what-size"
+rev = "d896656"
+hash = "62251f94eb67648d42cdfcfb8be0fad2"
+
+[[plugin.deps]]
+use = "yazi-rs/plugins:git"
+rev = "8f1d971"
+hash = "63b6c222bf2103b3023389dde5e2ecfe"
+
+[[plugin.deps]]
+use = "yazi-rs/plugins:diff"
+rev = "8f1d971"
+hash = "82376c3381ae915fd799d40f4dd4c6cd"
+
+[[plugin.deps]]
+use = "yazi-rs/plugins:vcs-files"
+rev = "8f1d971"
+hash = "4ee57085277d616acfa0ef1fef37dc00"
+
+[[plugin.deps]]
+use = "yazi-rs/plugins:mime-ext"
+rev = "8f1d971"
+hash = "4c49c446328c4553a4ccab7facc10b21"
+
+[[plugin.deps]]
+use = "yazi-rs/plugins:full-border"
+rev = "8f1d971"
+hash = "3996fc74044bc44144b323686f887e1"
+
+[[plugin.deps]]
+use = "Reledia/glow"
+rev = "bd3eaa5"
+hash = "92b5c58159a51c567f82b618cee2b78"
+
+[[plugin.deps]]
+use = "AnirudhG07/rich-preview"
+rev = "831234e"
+hash = "ed3363e256e210593f0f8e4cec3e36a9"
+
+[[plugin.deps]]
+use = "yazi-rs/plugins:piper"
+rev = "8f1d971"
+hash = "64713dcd74daf9ec644883a5895e5d1"
+
+[[flavor.deps]]
+use = "BennyOe/tokyo-night"
+rev = "5f56364"
+hash = "c0bf69ad2c44005892d586e9693993c6"
+
+[[flavor.deps]]
+use = "yazi-rs/flavors:catppuccin-mocha"
+rev = "f6b425a"
+hash = "14b111562c00eb1917fe3ca3ae9bb771"
+
+[[flavor.deps]]
+use = "yazi-rs/flavors:dracula"
+rev = "f6b425a"
+hash = "c5e49b9e877ca29a3622ec2e35af0b2a"
+
+[[flavor.deps]]
+use = "yazi-rs/flavors:catppuccin-frappe"
+rev = "f6b425a"
+hash = "2af5f0305730530f23e61ccaba119efe"
+
+[[flavor.deps]]
+use = "dangooddd/kanagawa"
+rev = "a0b1d9d"
+hash = "abfb0b2371259b2c8adfc7b617c3d7e5"
+
+[[flavor.deps]]
+use = "marcosvnmelo/kanagawa-dragon"
+rev = "4905527"
+hash = "5fd7aa0bf4e7d9753ad8a4660a6eb94f"
+
+[[flavor.deps]]
+use = "kmlupreti/ayu-dark"
+rev = "648a178"
+hash = "1a8af82f6246942bd700316a16c4e14a"
+
+[[flavor.deps]]
+use = "gosxrgxx/flexoki-dark"
+rev = "28e1977"
+hash = "9dbbb64ea20f9f1271c31951dea55c7b"
+
+[[flavor.deps]]
+use = "956MB/vscode-dark-plus"
+rev = "113cc48"
+hash = "fb2175ea2b78bff55fa83d0661d77407"
+
+[[flavor.deps]]
+use = "956MB/vscode-dark-modern"
+rev = "cd60541"
+hash = "f970182bee3543831796629ccf078553"
+
+[[flavor.deps]]
+use = "ficd0/ashen:ashen"
+rev = "28ec623"
+hash = "f9aed559dc6820dbc7253253be1bb6d2"
+
+[[flavor.deps]]
+use = "Chromium-3-Oxide/everforest-medium"
+rev = "0158f0f"
+hash = "dbbbfe681e156c28303efb1f44b6cbc4"

@@ -1,0 +1,178 @@
+[user]
+    name = Ivan Cherniukh
+    email = ivan123.public@gmail.com
+
+[core]
+	pager = diff-so-fancy | less --tabs=4 -RF
+
+[pager]
+    # Use a pager if the difftool output is larger than one screenful,
+    # consistent with the behaviour of `git diff`.
+    difftool = true
+
+[color]
+    ui = auto
+
+# [interactive]
+	# diffFilter = diff-so-fancy --patch
+    # diffFilter = delta --color-only
+
+# [core]
+    # pager = delta
+    # excludesfile = ~/.gitignore_global
+	# autocrlf = input
+	# editor = bbedit -w
+	# pager = less -FMRiX
+
+[gui]
+    skipDiscardChangeWarning = true
+
+# [diff]
+#     tool = diff-so-fancy
+#     renames = copies
+#     colorMoved = no
+#     external = difft
+[diff]
+    tool = difftastic
+    # Set difftastic as the default difftool, so we don't need to specify
+    # `-t difftastic` every time.
+
+[difftool "difftastic"]
+    # See `man git-difftool` for a description of MERGED, LOCAL and REMOTE.
+    cmd = difft "$MERGED" "$LOCAL" "abcdef1" "100644" "$REMOTE" "abcdef2" "100644"
+    prompt = false
+
+
+[alias]
+    # Difftastic aliases, so `git dlog` is `git log` with difftastic and so on.
+    dlog = -c diff.external=difft log --ext-diff
+    dshow = -c diff.external=difft show --ext-diff
+    ddiff = -c diff.external=difft diff
+    # `git log` with patches shown with difftastic.
+    dl = -c diff.external=difft log -p --ext-diff
+
+    # Show the most recent commit with difftastic.
+    ds = -c diff.external=difft show --ext-diff
+
+    # `git diff` with difftastic.
+    dft = -c diff.external=difft diff
+
+# [difftool]
+#     path=/usr/local/bin
+#     cmd=bbdiff --wait --resume $LOCAL $REMOTE
+#     prompt = false
+#     trustExitCode = true
+
+# [difftool "bbdiff"]
+#     path=/usr/local/bin
+#     cmd=bbdiff --wait --resume $LOCAL $REMOTE
+#     prompt = false
+#     trustExitCode = true
+
+# [color "branch"]
+# 	current = yellow reverse
+# 	local = yellow
+# 	remote = green
+#
+# [color "status"]
+# 	added = yellow
+# 	changed = green
+# 	untracked = cyan
+
+# [delta]
+    # colorMoved = yes
+    # colorMoved = no
+    # navigate = true
+    # line-numbers = true
+    # true-color = always
+    # features = colibri
+
+    # features = woolly-mammoth
+   # features = zebra-dark
+   # features = chameleon
+   # features = calochortus-lyallii
+#    features = calochortus-lyallii
+	# features = zebra-dark colibri gruvmax-fang chameleon mantis-shrimp calochortus-lyallii woolly-mammoth
+
+#	 syntax-theme = zenburn
+#	 syntax-theme = OneHalfDark | Github | Solarized (dark) | Vibrant Sunburst | Monokai Extended | gruvbox-dark | TwoDark
+	 # syntax-theme = Dracula
+	 # syntax-theme = Github
+	 # syntax-theme = base16
+
+[merge]
+    conflictstyle = diff3
+	# tool = bbdiff
+
+[commit]
+    # template = ~/.git-commit-template.txt
+    cleanup = strip
+
+[alias]
+    dag = log --graph --format='format:%C(yellow)%h%C(reset) %C(blue)%an <%ae>%C(reset) %C(magenta)%cr%C(reset)%C(auto)%d%C(reset)%n%s' --date-order
+    lg = log --pretty=format:"%C(red)%h\\ %C(yellow)%ad%Cgreen%d\\ %Creset%s%C(cyan)\\ [%cn]" --decorate --date=short
+    gl = log --pretty='%Cred%h%Creset %C(yellow)%d%Creset%<(70,trunc)%s %Cgreen(%cr)%Creset %C(cyan)[%<(15,trunc)%an]%Creset'
+    l = !git log --pretty=format:'%Cred---------------------------------------------------------------%n%C(red)%h %C(yellow)%d %Cgreen(%ci) %C(red)<%ae>%Creset%n%s%n%n%b%n' --abbrev-commit --date=relative --graph --date-order --stat --color | less -cR
+    lc = log --decorate --color --oneline --branches --remotes=backup --not --remotes
+    last = log -1 HEAD
+    lol = log --graph --decorate --pretty=oneline --abbrev-commit
+    lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
+    hist = log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short
+
+    lf = log ORIG_HEAD.. --stat --no-merges
+
+    st = status --short -b
+    std=diff --stat -r
+    sd=diff --stat -r
+    unstage = reset HEAD --
+    branchname = "!git rev-parse --abbrev-ref HEAD"
+
+    lastdiff = git diff HEAD~1..HEAD
+    ddiff = difftool -d
+    sdiff = diff --staged
+    diffstat = diff --stat -r
+    d = !git diff --color origin/mainline | less -cR
+    # pushup = "push --set-upstream origin %1"
+
+    econf = config --global -e
+    undo = reset HEAD~1 --mixed
+    save = !git add -A && git commit -m 'SAVEPOINT'
+    wip = commit -am "WIP"
+    amend = commit -a --amend
+    wipe = !git add -A && git commit -qm 'WIPE SAVEPOINT' && git reset HEAD~1 --hard
+
+    pullre = pull --rebase
+    pullm = "!git stash save && git fetch origin mainline && git pull --rebase origin mainline && git stash pop"
+    main = checkout mainline
+    mm = "!git checkout mainline && git pull"
+    m = "!git checkout -B $(git rev-parse --abbrev-ref HEAD)_WIP && git add -A && git commit -qm 'SAVEPOINT' && sleep 0.35 && git checkout mainline && git pull"
+# alias gim='git checkout mainline'
+# alias gimp='gim && sleep 0.35 && gip'
+# alias gifet='git fetch --all'
+# alias gims='git stash save && sleep 0.34 && git checkout mainline && sleep 0.34 && git pull'
+  
+[branch]
+    autosetuprebase = always
+
+[push]
+    default = tracking
+
+[pull]
+    rebase = true
+
+[include]
+    path = ~/.git-themes
+
+[filter "lfs"]
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true
+[lfs]
+    contenttype = 0
+
+[rerere]
+	enabled = true
+
+[advice]
+	addIgnoredFile = false

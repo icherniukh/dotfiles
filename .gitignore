@@ -1,0 +1,10 @@
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Local-only files (not shared)
+local/
+
+# If you experiment with stow adoption locally
+.stow-adopt-*/
+

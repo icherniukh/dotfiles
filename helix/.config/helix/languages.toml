@@ -1,0 +1,136 @@
+[[language]]
+name = "perl"
+# name = "brazil-config"
+scope = "source.brazil-config"
+file-types = ["Config"]
+roots = ["Config"]
+comment-token = "#"
+language-servers = ["barium"]
+grammar = "perl"
+
+[language-server.barium]
+command = "barium"
+
+[[grammar]]
+name = "perl"
+source = { git = "https://github.com/tree-sitter-perl/tree-sitter-perl", rev = "72a08a496a23212f23802490ef6f4700d68cfd0e" }
+
+# toml
+[[language]]
+name = 'toml'
+file-types = ["toml"]
+formatter = { command = "taplo", args = [
+  "fmt", "-",
+]}
+
+[language-server.efm]
+command = "efm-langserver"
+
+[[language]]
+name = "plaintext"
+file-types = ["txt"]
+scope = "source.txt"
+language-servers = [
+  { name = "efm", except-features = [ "format" ] },
+  # { name = "typescript-language-server", except-features = [ "format" ] }
+]
+
+# plaintext
+# [[language]]
+# name = "plaintext"
+# scope = "source.txt"
+# file-types = ["txt"]
+# indent = { tab-width = 2, unit = "  " }
+
+
+[[language]]
+name = "python"
+language-servers = ["pyright", "ruff", "pylyzer"]
+
+[language-server.pyright.config.python.analysis]
+typeCheckingMode = "basic"
+[language-server.ruff]
+command = "ruff"
+args = ["server"]
+[language-server.pylyzer]
+command = "pylyzer"
+config = { settings = { args = ["--server"] } }
+
+[[language]]
+name = "lua"
+scope = "source.lua"
+roots = ["."]
+file-types = ["lua"]
+comment-token = "--"
+indent = { tab-width = 2, unit = "  " }
+language-servers = ["lua-language-server"]
+formatter = { command = "stylua", args = ["-"] }
+
+# args = ["--jvm-arg=-javaagent:/Users/ivanck/utils/lombok.jar"]
+[language-server.jdtls]
+args = ["-data=/Users/ivanck/.cache/jdtls/workspace", "--jvm-args=-javaagent:/Users/ivanck/utils/lombok.jar"]
+command = "jdtls"
+
+[[language]]
+name = "java"
+scope = "source.java"
+injection-regex = "java"
+file-types = ["java"]
+roots = ["pom.xml", "build.gradle", ]
+indent = { tab-width = 4, unit = "    " }
+language-servers = [ "jdtls" ]
+
+[[language]]
+name = "json"
+language-servers = ["vscode-json-language-server"]
+comment-token = "//"
+# config = { "provideFormatter" = true, "json" = { "keepLines" = { "enable" = true } } }
+
+[language-server.vscode-json-language-server.config]
+provideFormatter = true
+json = { "keepLines" = { "enable" = true } }
+
+# [[language]]
+# name = "toml"
+# scope = "source.toml"
+# injection-regex = "toml"
+# file-types = ["toml", { glob = "pdm.lock" }, { glob = "poetry.lock" }, { glob = "Cargo.lock" }, { glob = "uv.lock" }]
+# comment-token = "#"
+# language-servers = [ "taplo" ]
+# indent = { tab-width = 2, unit = "  " }
+
+# [[grammar]]
+# name = "toml"
+# source = { git = "https://github.com/ikatyang/tree-sitter-toml", rev = "7cff70bbcbbc62001b465603ca1ea88edd668704" }
+
+
+# [language-server.biome]
+# args = ["lsp-proxy"]
+# command = "biome"
+
+# [[language]]
+# name = "json"
+# language-servers = [ { name = "biome" }, { name = "vscode-json-language-server", except-features = [ "format" ] } ]
+# formatter = { command = "biome", args = [ "format", "--stdin-file-path", "a.json" ] }
+# formatter = { command = "biome", args = [ "format", "--stdin-file-path", "-" ] }
+# formatter = { command = 'prettier', args = ["--parser", "json"] }
+
+# [language-server.eslint]
+# args = ["--stdio"]
+# command = "vscode-eslint-language-server"
+
+# [language-server.eslint.config]
+# # format = true
+# nodePath = ""
+# # onIgnoredFiles = "off"
+# # packageManager = "yarn"
+# quiet = false
+# rulesCustomizations = []
+# run = "onType"
+# # useESLintClass = false
+# validate = "on"
+# codeAction = { disableRuleComment = { enable = true, location = "separateLine" }, showDocumentation = { enable = true } }
+# # codeActionsOnSave = { mode = "all" }
+# experimental = {}
+# problems = { shortenToSingleLine = false }
+# # workingDirectory = { mode = "auto" }

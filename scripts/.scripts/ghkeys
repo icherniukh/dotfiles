@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v ghostty >/dev/null 2>&1; then
+  echo "error: ghostty is not available in PATH" >&2
+  exit 1
+fi
+
+if ! command -v fzf >/dev/null 2>&1; then
+  echo "error: fzf is required" >&2
+  exit 1
+fi
+
+color=$(printf '\033[38;5;214m')
+reset=$(printf '\033[0m')
+
+ghostty_man="/Applications/Ghostty.app/Contents/Resources/man/man5/ghostty.5"
+
+desc_tmp=$(mktemp)
+key_tmp=$(mktemp)
+trap 'rm -f "$desc_tmp" "$key_tmp"' EXIT
+
+if command -v man >/dev/null 2>&1 && [[ -f "$ghostty_man" ]]; then
+  MANPATH="/Applications/Ghostty.app/Contents/Resources/man:${MANPATH:-}" \
+  MANPAGER=cat man 5 ghostty 2>/dev/null | col -bx >"$desc_tmp" || true
+else
+  : >"$desc_tmp"
+fi
+
+ghostty +list-keybinds 2>&1 | sed '/^error: SentryInitFailed$/d' >"$key_tmp"
+
+python3 - "$desc_tmp" "$key_tmp" "$color" "$reset" <<'PY' \
+  | fzf --ansi \
+      --prompt "Ghostty keys> " \
+      --header "Ghostty keybind list (enter prints selection)"
+import re
+import sys
+
+desc_path, key_path, color, reset = sys.argv[1:5]
+
+def load_descriptions(path: str) -> dict[str, str]:
+    data = {}
+    section = False
+    current = None
+    lines = []
+
+    with open(path, "r", encoding="utf-8", errors="ignore") as fh:
+        for raw_line in fh:
+            line = raw_line.rstrip("\n")
+            stripped = line.strip()
+
+            if stripped == "KEYBIND ACTIONS":
+                section = True
+                current = None
+                lines = []
+                continue
+
+            if not section:
+                continue
+
+            if not stripped:
+                if current is not None:
+                    data[current] = " ".join(lines).strip()
+                    current = None
+                    lines = []
+                continue
+
+            if stripped.isupper() and stripped != "KEYBIND ACTIONS":
+                if current is not None:
+                    data[current] = " ".join(lines).strip()
+                break
+
+            candidate = line.lstrip()
+            leading = len(line) - len(line.lstrip(" "))
+            match = re.match(r"([A-Za-z0-9_+\-]+)(?:\s+(.*))?$", candidate)
+            if match:
+                action = match.group(1)
+                rest = match.group(2) or ""
+                if leading > 7 or not action[0].islower():
+                    if current is not None:
+                        lines.append(candidate.strip())
+                    continue
+                if current is not None:
+                    data[current] = " ".join(lines).strip()
+                current = action
+                lines = [rest.strip()] if rest else []
+            elif current is not None:
+                lines.append(candidate.strip())
+
+    if current is not None and current not in data:
+        data[current] = " ".join(lines).strip()
+
+    return data
+
+
+def main() -> None:
+    descriptions = load_descriptions(desc_path)
+
+    with open(key_path, "r", encoding="utf-8") as fh:
+        for raw_line in fh:
+            line = raw_line.strip()
+            if not line.startswith("keybind = "):
+                continue
+            entry = line[len("keybind = "):]
+            if "=" not in entry:
+                continue
+            binding, action = entry.split("=", 1)
+            base = action.split(":", 1)[0]
+            desc = descriptions.get(base, "")
+            print(f"{color}{binding:<28}{reset}  {action:<26}  {desc}")
+
+
+if __name__ == "__main__":
+    main()
+PY

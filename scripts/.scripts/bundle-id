@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+    echo "Usage: bundle-id <app_name_substring>"
+    exit 1
+fi
+
+search_term="$1"
+
+for app in /Applications/*.app; do
+    app_name=$(basename "$app" .app)
+    if [[ "$(echo "$app_name" | tr '[:upper:]' '[:lower:]')" == *"$(echo "$search_term" | tr '[:upper:]' '[:lower:]')"* ]]; then
+        plist="$app/Contents/Info.plist"
+        if [ -f "$plist" ]; then
+            bundle_id=$(plutil -p "$plist" | grep CFBundleIdentifier | sed 's/.*=> "\(.*\)"/\1/')
+            echo "$bundle_id"
+        fi
+    fi
+done

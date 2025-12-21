@@ -1,0 +1,63 @@
+# == Icons ==
+icons:
+  # When to use icons.
+  # When "classic" is set, this is set to "never".
+  # Possible values: always, auto, never
+  when: auto
+  # Which icon theme to use.
+  # Possible values: fancy, unicode
+  theme: fancy
+  # Separator between icon and the name
+  # Default to 1 space
+  # separator: " "
+
+# == Ignore Globs ==
+# A list of globs to ignore when listing.
+ignore-globs:
+  - .git
+  - Pictures
+  - Music
+  - Movies
+  - Library
+  - Public
+  - Desktop
+  - Documents
+  - Downloads
+  - Applications
+  
+# == Blocks ==
+# This specifies the columns and their order when using the long and the tree
+# layout.
+# Possible values: permission, user, group, context, size, date, name, inode, links, git
+blocks:
+  - permission
+  - git
+  - size
+  - date
+  - name
+
+# == Color ==
+# This has various color options. (Will be expanded in the future.)
+color:
+  # When to colorize the output.
+  # When "classic" is set, this is set to "never".
+  # Possible values: never, auto, always
+  when: auto
+  # How to colorize the output.
+  # When "classic" is set, this is set to "no-color".
+  # Possible values: default, custom
+  # When "custom" is set, lsd will look in the config directory for `colors.yaml`.
+  theme: default
+
+# == Date ==
+# This specifies the date format for the date column. The freeform format
+# accepts a strftime like string.
+# When "classic" is set, this is set to "date".
+# Possible values: date, locale, relative, '+<date_format>'
+# `date_format` will be a `strftime` formatted value. e.g. `date: '+%d %b %y %X'` will give you a date like this: 17 Jun 21 20:14:55
+date: relative
+
+# -- Custom --
+indicators: true
+size: short
+

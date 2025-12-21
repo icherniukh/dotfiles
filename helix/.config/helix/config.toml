@@ -1,0 +1,268 @@
+# theme = "merionette"
+# theme = "modus_vivendi_tritanopia"
+# theme = "horizon-dark"
+theme = "ao"
+
+[editor]
+true-color = true
+color-modes = true
+bufferline = "always"
+line-number = "relative"
+auto-info = true
+auto-pairs = false
+cursorline = true
+idle-timeout = 0
+# whitespace = "all"
+# insert-final-newline = false
+# gutters = ["diff", "diagnostics", "line-numbers", "spacer"]
+
+# [editor.whitespace]
+# render = "all"
+# or control each character
+[editor.whitespace.render]
+space = "none"
+newline = "none"
+# space = "all"
+# tab = "all"
+# nbsp = "none"
+# nnbsp = "none"
+
+[editor.file-picker]
+hidden = false
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.lsp]
+display-messages = true
+# display-inlay-hints = false
+auto-signature-help = true
+display-signature-help-docs = true
+display-progress-messages = true
+
+[editor.soft-wrap]
+enable = true
+wrap-indicator = "        ↪"
+
+[editor.smart-tab]
+enable = false
+
+[editor.indent-guides]
+render = true
+skip-levels = 1
+# character ="│"  # ┊︙"┊"#¦ı·¿¿⁞⋮┆┊︙⁞⋮┆┊︙│
+character ="┊"
+# character ="┆"
+
+[editor.statusline]
+# left   = ["mode", "spinner", "file-name", "file-modification-indicator"]
+# center = ["diagnostics", "spacer", "workspace-diagnostics", "spacer"]
+# right  = ["register", "selections", "separator", "spacer", "primary-selection-length", "separator", "spacer", "position", "separator", "spacer", "position-percentage", "separator", "spacer", "file-type"]
+mode.normal = "NORMAL"
+mode.insert = "INSERT"
+mode.select = "SELECT"
+
+[keys.normal]
+esc = ["collapse_selection", "keep_primary_selection"]
+A-x = ["collapse_selection", "keep_primary_selection"]
+Cmd-s = ":w"
+Cmd-S-s = ":write-buffer-close"
+Cmd-q = ":buffer-close"
+Cmd-c = "yank_main_selection_to_clipboard"
+C-c = "yank_main_selection_to_clipboard"
+C-s = ":w"
+C-S-s = ":write-buffer-close"
+C-q = ":buffer-close"
+C-1 = ":buffer-close!"
+C-S-q = ":q!"
+C-right =["move_next_word_start"]
+C-left = ["move_prev_word_end"]
+A-y = ["extend_to_line_bounds", "delete_selection", "move_line_up", "paste_before"] # Move line up
+A-h = ["extend_to_line_bounds", "delete_selection", "move_line_down", "paste_before"] # Move line down
+ret = "open_below"
+# D = "delete_char_forward"
+0 = "goto_line_start"
+# A-0 = "goto_line_end"
+K = "insert_newline" # ?
+X = ["extend_line_above"]
+# Duplicate line, preserving the position
+C-x = ["save_selection", "collapse_selection", "extend_line_below", "yank", "paste_after", "flip_selections", "collapse_selection", "jump_backward"]
+"'" = "change_selection"
+c = "toggle_comments"
+r="replace_selections_with_primary_clipboard"
+C-r=":run-shell-command"
+
+C-h="goto_first_nonwhitespace"
+C-l="goto_line_end"
+C-o="expand_selection"
+C-i="shrink_selection"
+C-n=["search_selection", "search_next"]
+"C-/"="search_selection"
+
+"g" = { a = "code_action" }
+"G" = ["goto_last_line"]
+"D" = ["extend_to_line_bounds", "delete_selection"]
+"$" = ["goto_line_end"]
+"end" = ["goto_line_end_newline"]
+
+A-1 = "jump_backward"
+A-2 = "jump_forward"
+A-9 = "jump_backward"
+A-0 = "jump_forward"
+"A-=" = "save_selection"
+"A-j" = "save_selection"
+
+C-S-a="decrement"
+"A-S-}" = "increment"
+# A-left = "extend_char_left"
+# A-right = "extend_char_right"
+S-left = "extend_char_left"
+S-right = "extend_char_right"
+A-S-left = "extend_prev_sub_word_start"
+A-S-right = "extend_next_sub_word_end"
+
+# ~/.config/helix/config.toml
+# C-y = ":sh zellij run -c -f -x 10% -y 10% --width 80% --height 80% -- bash ~/.config/helix/yazi-picker.sh open"
+# C-y = [
+#   ':sh rm -f /tmp/unique-file',
+#   ':insert-output yazi %{buffer_name} --chooser-file=/tmp/unique-file',
+#   ':insert-output echo "\x1b[?1049h\x1b[?2004h" > /dev/tty',
+#   ':open %sh{cat /tmp/unique-file}',
+#   ':redraw',
+# ]
+# C-y = ":sh zellij run -c -f -x 10% -y 10% --width 80% --height 80% -- zsh ~/.config/helix/yazi-picker2.zsh open"
+# C-y = ":sh zellij run -c -f -x 10% -y 10% --width 80% --height 80% -- bash ~/.config/helix/yazi-picker.sh open"
+# C-y = ":sh zellij run -c -f -x 10% -y 10% --width 80% --height 80% -- zsh ~/.config/helix/yazi-picker-wez.zsh open"
+# C-y = ":sh wezterm cli spawn --cwd $PWD -- zsh ~/.config/helix/yazi-picker-wez.zsh"
+# C-y = ":sh wezterm cli spawn --cwd $PWD -- zsh ~/.config/helix/yazi-picker-wez2.zsh"
+
+
+# "F13" = "command_palette"
+
+[keys.select]
+esc = ["collapse_selection", "keep_primary_selection", "normal_mode"]
+0   = "goto_line_start"
+
+# TODO: set up leader key
+# 1) leader: selection+extend
+# 2) leader: cut/yank/delete
+# 3) leader: file/buffer operations
+# 3) shell piping commands
+# 4) split (?)
+# 5) jumplist
+
+[keys.normal."A-backspace"]
+r = ":config-reload"
+o = ":config-open"
+l = ":o ~/.config/helix/languages.toml"
+w = ":o ~/.wezterm.lua"
+t = ":o ~/.config/ghostty.toml"
+k = ":o ~/.config/karabiner/karabiner.json"
+z = ":o ~/.config/zellij/config.kdl"
+y = ":o ~/.config/yazi/yazi.toml"
+"." = ":o ~/.zshrc"
+d = ":log-open"
+
+# TODO: leader key candidates: Space, Backspace, '\', <more> 
+# TODO: clean up - move stuff from here to backspace, leave here file stuff
+[keys.normal.tab] # Work with files
+1="extend_search_next"
+2="extend_search_prev"
+3="extend_next_char"
+4="extend_till_char"
+"#"="extend_prev_char"
+"$"="extend_till_prev_char"
+w="extend_next_word_end"
+b="extend_prev_word_start"
+","="kill_to_line_start"
+"."="kill_to_line_end"
+"S->"="extend_to_line_end"
+"S-<"="extend_to_line_start"
+backspace="delete_word_backward"
+S-backspace="delete_word_forward"
+q={q=":bc", w=":wq", e=":q",1=":bc!","2"=":wq!","3"=":q!"}
+# q=":buffer-close"
+s=":w"
+"D"=["delete_selection", "move_char_left"]
+"g"=["keep_primary_selection"]
+tab = ["goto_first_nonwhitespace",  "extend_to_line_end_newline"]
+left="extend_to_line_start"
+right="extend_to_line_end"
+up="extend_parent_node_start"
+down="extend_parent_node_end"
+
+# [keys.normal.tab.q]
+# q=":buffer-close"
+# w=":wq"
+# e=":q"
+# 1=":bc!"
+# 2=":wq!"
+# 3=":q!"
+
+# TODO: add duplicate line with one motion
+
+[keys.normal.'\']
+"a"="select_all_siblings"
+
+
+[keys.normal.backspace.e]
+n = "extend_to_first_nonwhitespace"
+w = "extend_to_word"
+x = "extend_line"
+h = "extend_to_line_start"
+u = "extend_to_line_start"
+l = "extend_to_line_end"
+o = "extend_to_line_end"
+L = "extend_to_line_end_newline"
+
+[keys.normal.backspace.g]
+n="goto_first_nonwhitespace"
+"."="goto_last_modification"
+
+[keys.normal.backspace]
+"=" = ["extend_to_line_bounds", "yank", "paste_after"]
+# backspace = ["save_selection", "extend_to_line_bounds", "yank", "paste_after", "jump_backward"]
+backspace = "suspend"
+
+# [commands]
+
+[keys.insert]
+Cmd-s = ":w"
+Cmd-S-s = ":write-buffer-close"
+Cmd-q = ":buffer-close"
+Cmd-c = "yank_main_selection_to_clipboard"
+C-c = "yank_main_selection_to_clipboard"
+C-s = ":w"
+C-S-s = ":write-buffer-close"
+C-q = ":buffer-close"
+C-1 = ":buffer-close!"
+C-S-q = ":q!"
+C-right =["move_next_word_start"]
+C-left = ["move_prev_word_end"]
+Cmd-e = ["collapse_selection", "keep_primary_selection", "normal_mode"]
+
+# [keys.normal]
+# C-y = ":sh zellij run -c -f -x 10% -y 10% --width 80% --height 80% -- bash ~/.config/helix/yazi-picker.sh open"
+# # C-y = ":sh zellij run -c -f -x 10% -y 10% --width 80% --height 80% -- zsh ~/.config/helix/yazi-picker2.zsh open"
+# # C-y = ":sh zellij run -c -f -x 10% -y 10% --width 80% --height 80% -- zsh ~/.config/helix/yazi-picker-wez.zsh open"
+# # ~/.config/helix/config.toml
+# [keys.normal.C-y]
+# Open the file(s) in the current window
+# y = ":sh zellij run -c -f -x 10% -y 10% --width 80% --height 80% -- bash ~/.config/helix/yazi-picker.sh open"
+# Open the file(s) in a vertical pane
+# v = ":sh zellij run -c -f -x 10% -y 10% --width 80% --height 80% -- bash ~/.config/helix/yazi-picker.sh vsplit"
+# Open the file(s) in a horizontal pane
+# h = ":sh zellij run -c -f -x 10% -y 10% --width 80% --height 80% -- bash ~/.config/helix/yazi-picker.sh hsplit"
+
+# "=" = ["extend_to_line_bounds", "yank", "paste_after", "move_line_up"]
+# "extend_to_first_nonwhitespace", "extend_to_line_end_newline"]
+# "minus" = ["extend_to_line_bounds", "yank", "paste_after"]
+
+# l = ":o ~/.config/helix/languages.toml"
+# q=":buffer-close"
+
+# 1 = ":w"
+# 2 = ":wq"
+# 3 = ":?"

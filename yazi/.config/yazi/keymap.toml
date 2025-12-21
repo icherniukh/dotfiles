@@ -1,0 +1,111 @@
+# Wrap withing the folder
+[mgr]
+prepend_keymap = [
+    { on = ["<Down>"],  run = "plugin arrow 1" },
+    { on = ["<Up>"],    run = "plugin arrow -1" },
+    { on = ["j"],       run = "plugin arrow 1" },
+    { on = ["k"],       run = "plugin arrow -1" },
+    { on = ["J"],       run = "plugin parent-arrow 1" },
+    { on = ["K"],       run = "plugin parent-arrow -1" },
+    { on = "<S-Down>",  run = "plugin parent-arrow 1" },
+    { on = "<S-Up>",    run = "plugin parent-arrow -1" },
+    # { on = ["R"],       run = "plugin rsync", desc = "Copy files using rsync" },
+    { on = "<C-1>",     run = "plugin --sync toggle-view parent", desc = "Toggle parent" },
+    { on = "<C-2>",     run = "plugin --sync toggle-view current", desc = "Toggle current" },
+    { on = "<C-3>",     run = "plugin --sync toggle-view preview", desc = "Toggle preview" },
+
+    { on = ["$"],       run = "plugin command", desc = "Yazi command prompt" },
+    { on = ["R"],       run = "plugin lazygit", desc = "run lazygit" },
+    { on = ["g"],       run = "plugin lazygit", desc = "run lazygit" },
+    { on = ["'", "s"],  run = "plugin what-size", desc = "Calc size of selection or cwd" },
+    { on = ["c", "p"],  run = "plugin command", desc = "Yazi command prompt" },
+    # { on = ["g", "i"],  run = "plugin lazygit", desc = "run lazygit" },
+    { on = ["<Backspace>", "h"],  run = "help", desc = "Open Help" },
+    { on = ["<Backspace>", "c"],  run  = "plugin vcs-files", desc = "Show Git file changes" },
+    { on = ["<Backspace>", "d"],  run = "plugin diff", desc = "Diff the selected with the hovered file" },
+    # { on = [ "g", "c" ], run  = "plugin vcs-files", desc = "Show Git file changes" },
+    # glow.yazi
+    { on = ["<C-e>"], run = "seek 5" },
+    { on = ["<C-y>"], run = "seek -5" },
+]
+
+# https://github.com/yazi-rs/plugins/tree/main/git.yazi
+[[plugin.prepend_fetchers]]
+id   = "git"
+name = "*"
+run  = "git"
+
+[[plugin.prepend_fetchers]]
+id   = "git"
+name = "*/"
+run  = "git"
+
+# [[manager.prepend_keymap]]
+# on = "<C-y>"
+# run = ["plugin system-clipboard"]
+
+# [[manager.prepend_keymap]]
+# on = ["<Down>"]
+# run = "arrow 1 --wrap"
+
+# [[manager.prepend_keymap]]
+# on = ["<Up>"]
+# run = "arrow -1 --wrap"
+
+# [[manager.prepend_keymap]]
+# on = ["j"]
+# run = "arrow 1 --wrap"
+
+# [[manager.prepend_keymap]]
+# on = ["k"]
+# run = "arrow -1 --wrap"
+
+# [[manager.prepend_keymap]]
+# on = "<C-1>"
+# run = "plugin --sync toggle-view --args=parent"
+
+# [[manager.prepend_keymap]]
+# on = "<C-2>"
+# run = "plugin --sync toggle-view --args=current"
+
+# [[manager.prepend_keymap]]
+# on = "<C-3>"
+# run = "plugin --sync toggle-view --args=preview"
+
+
+# # Plugins
+
+# [[manager.prepend_keymap]]
+# on   = [ "g", "i" ]
+# run  = "plugin lazygit"
+# desc = "run lazygit"
+
+# [[manager.prepend_keymap]]
+# on = [ "L" ]
+# run = "plugin bypass"
+# desc = "Recursively enter child directory, skipping children with only a single subdirectory"
+
+# [[manager.prepend_keymap]]
+# on = [ "H" ]
+# run = "plugin bypass --args=reverse"
+# desc = "Recursively enter parent directory, skipping parents with only a single subdirectory"
+
+# [[manager.prepend_keymap]]
+# on   = "!"
+# run  = 'shell "$SHELL" --block --confirm'
+# desc = "Open shell here"
+
+# [[manager.prepend_keymap]]
+# on   = "T"
+# run  = "plugin --sync max-preview"
+# desc = "Maximize or restore preview"
+
+# [[manager.prepend_keymap]]
+# on   = "F"
+# run  = "plugin smart-filter"
+# desc = "Smart filter"
+
+# [[manager.prepend_keymap]]
+# on   = [ "c", "p" ]
+# run  = "plugin command"
+# desc = "Yazi command prompt"
