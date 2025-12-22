@@ -23,6 +23,7 @@ fi
 [[ -f "${ZSH_CONFIG_DIR}/functions.zsh" ]] && source "${ZSH_CONFIG_DIR}/functions.zsh"
 [[ -f "${ZSH_CONFIG_DIR}/zshrc_prof.zsh" ]] && source "${ZSH_CONFIG_DIR}/zshrc_prof.zsh"
 [[ -f "${ZSH_CONFIG_DIR}/apikeys.zsh" ]] && source "${ZSH_CONFIG_DIR}/apikeys.zsh"
+[[ -f "${ZSH_CONFIG_DIR}/ccconfig.zsh" ]] && source "${ZSH_CONFIG_DIR}/ccconfig.zsh"
 # Optional: sync `~/.scripts` → `~/.local/bin` on every shell start (disabled by default).
 # [[ -x "${ZSH_CONFIG_DIR}/sync-scripts.zsh" ]] && "${ZSH_CONFIG_DIR}/sync-scripts.zsh"
 
