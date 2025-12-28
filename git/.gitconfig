@@ -3,45 +3,66 @@
     email = ivan123.public@gmail.com
 
 [core]
-	pager = diff-so-fancy | less --tabs=4 -RF
-
-[pager]
-    # Use a pager if the difftool output is larger than one screenful,
-    # consistent with the behaviour of `git diff`.
-    difftool = true
-
-[color]
-    ui = auto
-
-# [interactive]
-	# diffFilter = diff-so-fancy --patch
-    # diffFilter = delta --color-only
-
-# [core]
+	# pager = diff-so-fancy | less --tabs=4 -RF
+	autocrlf = input
+	eol = lf
+    excludesfile = ~/.gitignore_global
+    pager = delta
     # pager = delta
     # excludesfile = ~/.gitignore_global
 	# autocrlf = input
 	# editor = bbedit -w
 	# pager = less -FMRiX
 
+[pager]
+    # Use a pager if the difftool output is larger than one screenful,
+    # consistent with the behaviour of `git diff`.
+    difftool = true
+
+[interactive]
+	diffFilter = diff-so-fancy --patch
+    # diffFilter = delta --color-only
+
+[color]
+    ui = auto
+
 [gui]
     skipDiscardChangeWarning = true
 
-# [diff]
-#     tool = diff-so-fancy
-#     renames = copies
-#     colorMoved = no
-#     external = difft
 [diff]
     tool = difftastic
     # Set difftastic as the default difftool, so we don't need to specify
     # `-t difftastic` every time.
+    # tool = diff-so-fancy
+    # renames = copies
+    # colorMoved = no
+    # external = difft
 
 [difftool "difftastic"]
     # See `man git-difftool` for a description of MERGED, LOCAL and REMOTE.
     cmd = difft "$MERGED" "$LOCAL" "abcdef1" "100644" "$REMOTE" "abcdef2" "100644"
     prompt = false
 
+# [delta]
+    # colorMoved = yes
+    # colorMoved = no
+    # navigate = true
+    # line-numbers = true
+    # true-color = always
+    # features = colibri
+
+    # features = woolly-mammoth
+   # features = zebra-dark
+   # features = chameleon
+   # features = calochortus-lyallii
+#    features = calochortus-lyallii
+	# features = zebra-dark colibri gruvmax-fang chameleon mantis-shrimp calochortus-lyallii woolly-mammoth
+
+#	 syntax-theme = zenburn
+#	 syntax-theme = OneHalfDark | Github | Solarized (dark) | Vibrant Sunburst | Monokai Extended | gruvbox-dark | TwoDark
+	 # syntax-theme = Dracula
+	 # syntax-theme = Github
+	 # syntax-theme = base16
 
 [alias]
     # Difftastic aliases, so `git dlog` is `git log` with difftastic and so on.
@@ -79,26 +100,6 @@
 # 	changed = green
 # 	untracked = cyan
 
-# [delta]
-    # colorMoved = yes
-    # colorMoved = no
-    # navigate = true
-    # line-numbers = true
-    # true-color = always
-    # features = colibri
-
-    # features = woolly-mammoth
-   # features = zebra-dark
-   # features = chameleon
-   # features = calochortus-lyallii
-#    features = calochortus-lyallii
-	# features = zebra-dark colibri gruvmax-fang chameleon mantis-shrimp calochortus-lyallii woolly-mammoth
-
-#	 syntax-theme = zenburn
-#	 syntax-theme = OneHalfDark | Github | Solarized (dark) | Vibrant Sunburst | Monokai Extended | gruvbox-dark | TwoDark
-	 # syntax-theme = Dracula
-	 # syntax-theme = Github
-	 # syntax-theme = base16
 
 [merge]
     conflictstyle = diff3
