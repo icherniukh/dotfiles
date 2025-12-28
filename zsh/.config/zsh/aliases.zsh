@@ -129,3 +129,6 @@ alias qq='kiro-cli'
 alias kira='kiro-cli'
 
 # >>> USER ALIASES >>>
+
+# docker = opposite of intuitive
+alias lzdock='lazydocker'

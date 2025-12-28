@@ -21,7 +21,7 @@ idle-timeout = 0
 # or control each character
 [editor.whitespace.render]
 space = "none"
-newline = "none"
+# newline = "all"
 # space = "all"
 # tab = "all"
 # nbsp = "none"
