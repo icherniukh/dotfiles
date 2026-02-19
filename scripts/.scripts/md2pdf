@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+show_help() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS] <markdown_file> [output.pdf]
+
+Render markdown to PDF.
+
+Options:
+  -w          Use weasyprint (default)
+  -c          Use Chrome headless
+  -l          Use LaTeX (xelatex/pdflatex)
+  -h          Show this help
+
+EOF
+    exit 0
+}
+
+engine="weasyprint"
+
+while getopts "wclh" opt; do
+    case $opt in
+        w) engine="weasyprint" ;;
+        c) engine="chrome" ;;
+        l) engine="latex" ;;
+        h) show_help ;;
+        *) show_help ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ $# -eq 0 ]; then
+    echo "Error: No file specified"
+    show_help
+fi
+
+input="$1"
+output="${2:-${input%.md}.pdf}"
+tmp_html="/tmp/$(basename "${input%.md}").html"
+
+case $engine in
+    weasyprint)
+        pandoc "$input" -o "$tmp_html" --standalone --embed-resources
+        weasyprint "$tmp_html" "$output" 2>/dev/null
+        rm "$tmp_html"
+        ;;
+    chrome)
+        pandoc "$input" -o "$tmp_html" --standalone --embed-resources
+        if [ -f "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ]; then
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu --print-to-pdf="$output" "$tmp_html" 2>/dev/null
+        elif command -v google-chrome &> /dev/null; then
+            google-chrome --headless --disable-gpu --print-to-pdf="$output" "$tmp_html" 2>/dev/null
+        elif command -v chromium &> /dev/null; then
+            chromium --headless --disable-gpu --print-to-pdf="$output" "$tmp_html" 2>/dev/null
+        else
+            echo "Error: Chrome not found"
+            rm "$tmp_html"
+            exit 1
+        fi
+        rm "$tmp_html"
+        ;;
+    latex)
+        if command -v xelatex &> /dev/null; then
+            pandoc "$input" -o "$output" --pdf-engine=xelatex -V geometry:margin=1in -V fontsize=11pt
+        elif command -v pdflatex &> /dev/null; then
+            pandoc "$input" -o "$output" --pdf-engine=pdflatex -V geometry:margin=1in -V fontsize=11pt
+        else
+            echo "Error: LaTeX not found. Install mactex-no-gui"
+            exit 1
+        fi
+        ;;
+esac
+
+echo "Generated: $output"

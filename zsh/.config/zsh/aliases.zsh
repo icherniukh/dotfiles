@@ -21,16 +21,14 @@ alias okay='source ~/.zshrc'
 function _mkcd() { mkdir -p "$1" && pushd "$1"; }
 alias mkcd='_mkcd'
 
-alias crup='ada credentials print --account=194722397145 --provider=Isengard --profile=default --role=Admin'
-
 alias yfind="find . -type f -print0 | xargs -0 grep $@"
 
 # File listing aliases
-alias ls='eza -hF --icons=always --time-style relative --color=auto --no-permissions --no-symlinks --no-user --classify --color-scale=age --git'
-alias lz='eza -l --no-user --no-permissions --no-symlinks --time-style relative --color=always --color-scale-mode=fixed -1 --icons=always --git-repos --git'
+alias ls='eza -hF --icons=always --time-style relative --color=auto --no-permissions --no-user --classify --color-scale=age --git'
+alias lz='eza -l --no-user --no-permissions --time-style relative --color=always --color-scale-mode=fixed -1 --icons=always --git-repos --git'
 alias l='lsd --blocks=git,date,size,name -trG --classify --no-symlink'
 alias ld='lsd --icon-theme fancy -Fh --date=relative --no-symlink'
-alias ll='lsd -l --no-symlink'
+alias ll='lsd -l -NFL'
 alias la='lsd -ALhg --date relative --no-symlink --permission disable'
 alias lla='lsd -lahFGg --date relative --no-symlink'
 alias lr='lsd --color auto --icon-theme fancy -FLg --tree --depth=2 --no-symlink'
@@ -128,7 +126,13 @@ alias bsd='brew search --desc'
 alias qq='kiro-cli'
 alias kira='kiro-cli'
 
-# >>> USER ALIASES >>>
-
 # docker = opposite of intuitive
 alias lzdock='lazydocker'
+
+# File managers
+alias nimble="open -a 'Nimble Commander'"
+alias bloom="open -a Bloom"
+alias marta="open -a Marta"
+
+# Opens GUI Finder in current folder (BOOORINGGGG)
+alias finder='open -R .'

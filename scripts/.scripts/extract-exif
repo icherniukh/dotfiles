@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+show_help() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS] <file>
+
+Extract all possible EXIF metadata from files.
+
+Options:
+  -s | -l     Short tag names | Long descriptions (default: short)
+  -u | -k     Include unknown tags | Skip unknown tags (default: include)
+  -h          Show this help
+
+EOF
+    exit 0
+}
+
+tag_format="-s"
+unknown="-u"
+
+while getopts "slukh" opt; do
+    case $opt in
+        s) tag_format="-s" ;;
+        l) tag_format="" ;;
+        u) unknown="-u" ;;
+        k) unknown="" ;;
+        h) show_help ;;
+        *) show_help ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ $# -eq 0 ]; then
+    echo "Error: No file specified"
+    show_help
+fi
+
+exiftool -a $unknown -G1 $tag_format -ee3 -api RequestAll=3 "$@"

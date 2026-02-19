@@ -30,6 +30,9 @@ fi
 # Host-local overrides (git-ignored)
 [[ -f "${ZSH_CONFIG_DIR}/local.zsh" ]] && source "${ZSH_CONFIG_DIR}/local.zsh"
 
+
+[ -f /opt/homebrew/etc/profile.d/autojump.sh ] && . /opt/homebrew/etc/profile.d/autojump.sh
+
 if [[ "$ZPROF" = true ]]; then
   echo "  ## Finished ZPROF"
   zprof

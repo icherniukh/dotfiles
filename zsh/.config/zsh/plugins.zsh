@@ -38,6 +38,7 @@ if ! zgenom saved; then
     zgenom load zdharma-continuum/history-search-multi-word
     zgenom load akash329d/zsh-alias-finder
     zgenom load gretzky/auto-color-ls
+    zgenom load mfaerevaag/wd
 
     zgenom bin tj/git-extras
     zgenom save

@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+
+show_help() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS] <input_file>
+
+Convert audio to EP-133 KO-II format (46.875kHz, 16-bit WAV, mono).
+Creates backup and converts in-place.
+
+Options:
+  -s          Stereo output (default: mono)
+  -n          Normalize audio
+  -h          Show this help
+
+EOF
+    exit 0
+}
+
+channels=1
+normalize=""
+
+while getopts "snh" opt; do
+    case $opt in
+        s) channels=2 ;;
+        n) normalize="-af loudnorm" ;;
+        h) show_help ;;
+        *) show_help ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ $# -eq 0 ]; then
+    echo "Error: No file specified"
+    show_help
+fi
+
+input="$1"
+backup="${input}.bak"
+output="${input%.*}.wav"
+
+# Create backup
+cp "$input" "$backup"
+
+# Get original file size
+original_size=$(stat -f%z "$input")
+
+# Get peak level before conversion
+peak=$(ffmpeg -i "$input" -af "volumedetect" -f null - 2>&1 | grep "max_volume" | awk '{print $5}')
+peak_val=${peak% dB}
+
+# Convert
+ffmpeg -i "$input" -ar 46875 -ac $channels -sample_fmt s16 -acodec pcm_s16le $normalize -y "$output" 2>/dev/null
+
+# Determine verdict
+if (( $(echo "$peak_val > -1" | bc -l) )); then
+    verdict="🔴 CLIPPING"
+elif (( $(echo "$peak_val > -3" | bc -l) )); then
+    verdict="🟡 HOT"
+elif (( $(echo "$peak_val > -6" | bc -l) )); then
+    verdict="🟢 OPTIMAL"
+elif (( $(echo "$peak_val > -12" | bc -l) )); then
+    verdict="🟡 QUIET"
+else
+    verdict="🔴 TOO QUIET"
+fi
+
+echo "Peak: ${peak_val} dB - ${verdict}"
+echo "Backup: $backup"
+echo "Converted: $output"
+
+# Calculate size difference
+new_size=$(stat -f%z "$output")
+saved=$((original_size - new_size))
+
+if [ $saved -gt 0 ]; then
+    saved_mb=$(echo "scale=2; $saved / 1048576" | bc)
+    percent=$(echo "scale=1; $saved * 100 / $original_size" | bc)
+    echo "💾 Saved: ${saved_mb} MB (${percent}% smaller)"
+elif [ $saved -lt 0 ]; then
+    increased=$((new_size - original_size))
+    increased_mb=$(echo "scale=2; $increased / 1048576" | bc)
+    percent=$(echo "scale=1; $increased * 100 / $original_size" | bc)
+    echo "📈 Size increased: ${increased_mb} MB (${percent}% larger)"
+else
+    echo "📊 Same size"
+fi

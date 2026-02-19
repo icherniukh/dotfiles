@@ -1,31 +1,31 @@
 [[plugin.deps]]
 use = "pirafrank/what-size"
-rev = "d896656"
-hash = "62251f94eb67648d42cdfcfb8be0fad2"
+rev = "a36fdaf"
+hash = "c5c38bb8cd68d4426471efe0013ca0ac"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:git"
-rev = "8f1d971"
-hash = "63b6c222bf2103b3023389dde5e2ecfe"
+rev = "398796d"
+hash = "73788c7dc5827ef4677c502c3ea8fa19"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:diff"
-rev = "8f1d971"
-hash = "82376c3381ae915fd799d40f4dd4c6cd"
+rev = "398796d"
+hash = "492e4757f332e29f982556bf507e043c"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:vcs-files"
-rev = "8f1d971"
+rev = "398796d"
 hash = "4ee57085277d616acfa0ef1fef37dc00"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:mime-ext"
-rev = "8f1d971"
-hash = "4c49c446328c4553a4ccab7facc10b21"
+rev = "398796d"
+hash = "48a77ab785d1ee73bc2d7bbe2a4c2090"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:full-border"
-rev = "8f1d971"
+rev = "398796d"
 hash = "3996fc74044bc44144b323686f887e1"
 
 [[plugin.deps]]

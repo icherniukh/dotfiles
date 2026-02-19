@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+show_help() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS] <file> [output_dir]
+
+Extract all embedded images from PDF and other files.
+
+Options:
+  -a          Extract all images (embedded + previews) (default)
+  -e          Extract embedded images only (PDF content)
+  -p          Extract preview/thumbnail images only (metadata)
+  -h          Show this help
+
+Output directory defaults to current directory if not specified.
+
+EOF
+    exit 0
+}
+
+extract_type="all"
+
+while getopts "aeph" opt; do
+    case $opt in
+        a) extract_type="all" ;;
+        e) extract_type="embedded" ;;
+        p) extract_type="preview" ;;
+        h) show_help ;;
+        *) show_help ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ $# -eq 0 ]; then
+    echo "Error: No file specified"
+    show_help
+fi
+
+file="$1"
+output_dir="${2:-.}"
+
+case $extract_type in
+    all)
+        exiftool -a -b -ee -embeddedimage -W "$output_dir/%d%f_embedded_%.3g3.%s" "$file"
+        exiftool -a -b -ee -preview:all -W "$output_dir/%d%f_%t%-c.%s" "$file"
+        ;;
+    embedded)
+        exiftool -a -b -ee -embeddedimage -W "$output_dir/%d%f_%.3g3.%s" "$file"
+        ;;
+    preview)
+        exiftool -a -b -ee -preview:all -W "$output_dir/%d%f_%t%-c.%s" "$file"
+        ;;
+esac

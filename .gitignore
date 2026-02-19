@@ -8,3 +8,8 @@ local/
 # If you experiment with stow adoption locally
 .stow-adopt-*/
 
+
+# Claude Code - personal settings
+.claude/
+local/.claude/
+

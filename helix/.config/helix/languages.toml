@@ -19,9 +19,8 @@ source = { git = "https://github.com/tree-sitter-perl/tree-sitter-perl", rev = "
 [[language]]
 name = 'toml'
 file-types = ["toml"]
-formatter = { command = "taplo", args = [
-  "fmt", "-",
-]}
+formatter = { command = "taplo", args = ["fmt", "-"] }
+auto-format = true
 
 [language-server.efm]
 command = "efm-langserver"
@@ -31,7 +30,7 @@ name = "plaintext"
 file-types = ["txt"]
 scope = "source.txt"
 language-servers = [
-  { name = "efm", except-features = [ "format" ] },
+  { name = "efm", except-features = ["format"] },
   # { name = "typescript-language-server", except-features = [ "format" ] }
 ]
 
@@ -46,6 +45,8 @@ language-servers = [
 [[language]]
 name = "python"
 language-servers = ["pyright", "ruff", "pylyzer"]
+formatter = { command = "black", args = ["--quiet", "-"] }
+auto-format = true
 
 [language-server.pyright.config.python.analysis]
 typeCheckingMode = "basic"
@@ -65,10 +66,24 @@ comment-token = "--"
 indent = { tab-width = 2, unit = "  " }
 language-servers = ["lua-language-server"]
 formatter = { command = "stylua", args = ["-"] }
+auto-format = true
+
+[[language]]
+name = "yaml"
+formatter = { command = "prettier", args = ["--parser", "yaml"] }
+auto-format = true
+
+[[language]]
+name = "markdown"
+formatter = { command = "prettier", args = ["--parser", "markdown"] }
+auto-format = true
 
 # args = ["--jvm-arg=-javaagent:/Users/ivanck/utils/lombok.jar"]
 [language-server.jdtls]
-args = ["-data=/Users/ivanck/.cache/jdtls/workspace", "--jvm-args=-javaagent:/Users/ivanck/utils/lombok.jar"]
+args = [
+  "-data=/Users/ivanck/.cache/jdtls/workspace",
+  "--jvm-args=-javaagent:/Users/ivanck/utils/lombok.jar",
+]
 command = "jdtls"
 
 [[language]]
@@ -76,44 +91,63 @@ name = "java"
 scope = "source.java"
 injection-regex = "java"
 file-types = ["java"]
-roots = ["pom.xml", "build.gradle", ]
+roots = ["pom.xml", "build.gradle"]
 indent = { tab-width = 4, unit = "    " }
-language-servers = [ "jdtls" ]
+language-servers = ["jdtls"]
+
+# [[language]]
+# name = "json"
+# # language-servers = ["vscode-json-language-server"]
+# language-servers = [ { name = "biome" }, { name = "vscode-json-language-server", except-features = [ "format" ] } ]
+# comment-token = "//"
+# formatter = { command = "prettier", args = ["--parser", "json"] }
+# auto-format = true
+# # config = { "provideFormatter" = true, "json" = { "keepLines" = { "enable" = true } } }
+
+
+[[language]]
+name = "toml"
+scope = "source.toml"
+injection-regex = "toml"
+file-types = [
+  "toml",
+  { glob = "pdm.lock" },
+  { glob = "poetry.lock" },
+  { glob = "Cargo.lock" },
+  { glob = "uv.lock" },
+]
+comment-token = "#"
+language-servers = ["taplo"]
+indent = { tab-width = 2, unit = "  " }
+
+[[grammar]]
+name = "toml"
+source = { git = "https://github.com/ikatyang/tree-sitter-toml", rev = "7cff70bbcbbc62001b465603ca1ea88edd668704" }
+
+
+[language-server.biome]
+args = ["lsp-proxy"]
+command = "biome"
 
 [[language]]
 name = "json"
-language-servers = ["vscode-json-language-server"]
-comment-token = "//"
-# config = { "provideFormatter" = true, "json" = { "keepLines" = { "enable" = true } } }
+language-servers = [
+  { name = "biome" },
+  { name = "vscode-json-language-server", except-features = [
+    "format",
+  ] },
+]
+formatter = { command = 'prettier', args = ["--parser", "json"] }
+# formatter = { command = "biome", args = [
+#   "format",
+#   "--stdin-file-path",
+#   "a.json",
+# ] }
+# formatter = { command = "biome", args = ["format", "--stdin-file-path", "-"] }
 
 [language-server.vscode-json-language-server.config]
 provideFormatter = true
 json = { "keepLines" = { "enable" = true } }
-
-# [[language]]
-# name = "toml"
-# scope = "source.toml"
-# injection-regex = "toml"
-# file-types = ["toml", { glob = "pdm.lock" }, { glob = "poetry.lock" }, { glob = "Cargo.lock" }, { glob = "uv.lock" }]
-# comment-token = "#"
-# language-servers = [ "taplo" ]
-# indent = { tab-width = 2, unit = "  " }
-
-# [[grammar]]
-# name = "toml"
-# source = { git = "https://github.com/ikatyang/tree-sitter-toml", rev = "7cff70bbcbbc62001b465603ca1ea88edd668704" }
-
-
-# [language-server.biome]
-# args = ["lsp-proxy"]
-# command = "biome"
-
-# [[language]]
-# name = "json"
-# language-servers = [ { name = "biome" }, { name = "vscode-json-language-server", except-features = [ "format" ] } ]
-# formatter = { command = "biome", args = [ "format", "--stdin-file-path", "a.json" ] }
-# formatter = { command = "biome", args = [ "format", "--stdin-file-path", "-" ] }
-# formatter = { command = 'prettier', args = ["--parser", "json"] }
 
 # [language-server.eslint]
 # args = ["--stdio"]
