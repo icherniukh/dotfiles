@@ -13,7 +13,7 @@ This repo is meant to replace the current yadm-in-`$HOME` setup with explicit sy
    - `yadm status`
 2. Keep yadm as a safety net for now (do not delete it yet).
 3. Clone this repo somewhere (example):
-   - `git clone git@github.com:icherniukh/dotfiles.git ~/proj/dotfiles-stow`
+   - `git clone https://github.com/USERNAME/dotfiles.git ~/proj/dotfiles-stow`
 4. Dry-run stow packages you want:
    - `cd ~/proj/dotfiles-stow`
    - `stow -nvt ~ zsh git fzf scripts`

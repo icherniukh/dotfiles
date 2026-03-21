@@ -27,11 +27,15 @@ fi
 # Optional: sync `~/.scripts` → `~/.local/bin` on every shell start (disabled by default).
 # [[ -x "${ZSH_CONFIG_DIR}/sync-scripts.zsh" ]] && "${ZSH_CONFIG_DIR}/sync-scripts.zsh"
 
+# Ghostty AI themes
+[[ -f "$(brew --prefix)/share/ghostty-ai-themes.zsh" ]] && \
+  source "$(brew --prefix)/share/ghostty-ai-themes.zsh"
+
 # Host-local overrides (git-ignored)
 [[ -f "${ZSH_CONFIG_DIR}/local.zsh" ]] && source "${ZSH_CONFIG_DIR}/local.zsh"
 
-
-[ -f /opt/homebrew/etc/profile.d/autojump.sh ] && . /opt/homebrew/etc/profile.d/autojump.sh
+# Autojump
+[[ -f /opt/homebrew/etc/profile.d/autojump.sh ]] && source /opt/homebrew/etc/profile.d/autojump.sh
 
 if [[ "$ZPROF" = true ]]; then
   echo "  ## Finished ZPROF"
@@ -41,5 +45,5 @@ fi
 # Kiro CLI post block. Keep at the bottom of this file.
 [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh"
 
-# bun completions
-[ -s "${HOME}/.bun/_bun" ] && source "${HOME}/.bun/_bun"
+# Bun completions
+[[ -f "${HOME}/.bun/_bun" ]] && source "${HOME}/.bun/_bun"

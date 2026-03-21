@@ -44,7 +44,7 @@ alias ip='ip --color=auto'
 alias fgrep='fgrep --color=auto'
 
 # Quick-add added aliases
-alias gh='ghostty'
+# alias gh='ghostty'
 function xrand() {
   local ans=$((RANDOM%($1+1)))
   echo $ans
@@ -136,3 +136,12 @@ alias marta="open -a Marta"
 
 # Opens GUI Finder in current folder (BOOORINGGGG)
 alias finder='open -R .'
+
+# List all ghosty theme names
+alias ghthemes='lsd -1N --icon never /Applications/Ghostty.app/Contents/Resources/ghostty/themes/'
+
+# stylish csv table printing
+alias csvcat='tennis'
+
+# logic
+alias gotosamples='cd "/Library/Application Support/Logic/Ultrabeat Samples/Epic Electro/"'

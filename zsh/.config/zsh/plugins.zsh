@@ -17,6 +17,12 @@ zstyle ':completion:*' squeeze-slashes true
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}' 'r:|[._-]=* r:|=*'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
+# Lazy-load nvm (only load when node/npm/nvm is actually used)
+# This saves ~330ms on shell startup
+export NVM_LAZY_LOAD=true
+# Optional: add extra commands to trigger nvm loading
+export NVM_LAZY_LOAD_EXTRA_COMMANDS="node npm npx"
+
 source "${HOME}/.zgenom/zgenom.zsh"
 
 zgenom autoupdate
@@ -31,7 +37,11 @@ if ! zgenom saved; then
     zgenom load lukechilds/zsh-nvm
     zgenom load lukechilds/zsh-better-npm-completion
     zgenom load supercrabtree/k
-    zgenom load RobSis/zsh-completion-generator
+    # 2026-03-21: Disabled zsh-completion-generator for performance
+    # - Was taking ~317ms (38% of shell startup time)
+    # - Testing built-in zsh completions instead
+    # - RE-ENABLE if completions are broken or missing for commands you use
+    # zgenom load RobSis/zsh-completion-generator
     zgenom load unixorn/fzf-zsh-plugin
     zgenom load unixorn/git-extra-commands
     zgenom load zpm-zsh/clipboard

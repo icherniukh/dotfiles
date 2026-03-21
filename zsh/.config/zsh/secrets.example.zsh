@@ -7,3 +7,6 @@
 # export ANTHROPIC_API_KEY=""
 # export GITHUB_TOKEN=""
 
+# History sharing secret (for shell history sharing tools)
+# export HISTORY_SECRET="your-shared-secret-here"
+
