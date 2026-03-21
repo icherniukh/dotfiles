@@ -18,7 +18,8 @@ mkdir -p "$ZSH_CACHE_DIR" "$(dirname "$HISTFILE")" >/dev/null 2>&1
 export LS_COLORS=$(vivid generate one-dark)
 
 # History settings
-export HISTORY_SECRET=<REDACTED>
+# NOTE: HISTORY_SECRET should be set in local ~/.config/zsh/secrets.zsh
+# See zsh/.config/zsh/secrets.example.zsh for reference
 HISTSIZE=6969420
 SAVEHIST=6969420
 

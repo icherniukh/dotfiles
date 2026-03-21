@@ -13,3 +13,6 @@ local/
 .claude/
 local/.claude/
 
+# Secrets - never commit actual values
+zsh/.config/zsh/secrets.zsh
+
