@@ -1,52 +1,56 @@
 # Dotfiles (GNU Stow)
 
-This repo is a transparent, symlink-based dotfiles setup using GNU Stow.
-
-## Why Stow
-
-- Stow only touches files when you run it (no “ignore my whole `$HOME`” problem).
-- The result is just symlinks you can `ls -la` and reason about.
+Transparent, symlink-based dotfiles managed with GNU Stow.
 
 ## Install
 
-- macOS (Homebrew): `brew install stow`
+```bash
+brew install stow
+```
 
 ## Usage
 
-From the repo root:
+```bash
+# Dry run
+stow -nvt ~ zsh git fzf scripts
 
-- Dry run: `stow -nvt ~ zsh git fzf scripts`
-- Apply: `stow -vt ~ zsh git fzf scripts`
-- Remove: `stow -Dvt ~ zsh`
+# Apply
+stow -vt ~ zsh git fzf scripts
 
-Optional packages: `wez ghostty helix lazygit lsd ripgrep starship procs yazi` (see `INVENTORY.md`).
+# Remove
+stow -Dvt ~ zsh
+```
 
-### First-time setup (safe)
+### Packages
 
-1. Run `stow -nvt ~ zsh` and inspect any conflicts.
-2. If a file already exists, either:
-   - move it aside (recommended), then re-run stow, or
-   - use adoption: `stow --adopt -vt ~ zsh` (moves the existing file into the repo, then replaces it with a symlink).
+Core:
+- `zsh/` → `~/.zshrc`, `~/.zprofile`, `~/.zshenv`, `~/.profile`, `~/.config/zsh/*`
+- `git/` → `~/.gitconfig`, `~/.git-themes`
+- `fzf/` → `~/.config/fzf/fzf.zsh`
+- `scripts/` → `~/.scripts/*`
 
-See `MIGRATION.md` for switching from the current yadm setup.
+Optional app configs:
+- `wez/` → `~/.config/wezmux.zsh`, `~/.config/wezaliases.zsh`
+- `ghostty/` → `~/.config/ghostty/*`
+- `helix/` → `~/.config/helix/*`
+- `lazygit/` → `~/.config/lazygit/config.yml`
+- `lsd/` → `~/.config/lsd/config.yml`
+- `ripgrep/` → `~/.config/ripgrep/config`
+- `starship/` → `~/.config/starship.toml`
+- `procs/` → `~/.config/procs.toml`
+- `yazi/` → `~/.config/yazi/*`
 
-## Secrets / machine-local config
+### First-time setup
 
-- Do not commit secrets.
-- Create `~/.config/zsh/secrets.zsh` (not tracked) using `zsh/.config/zsh/secrets.example.zsh` as a template.
-- Create `~/.config/zsh/local.zsh` (not tracked) using `zsh/.config/zsh/local.example.zsh` as a template.
+1. `stow -nvt ~ zsh` and inspect conflicts
+2. Move conflicting files aside, or use `stow --adopt -vt ~ zsh`
 
-Local-only notes/snapshots can live under `local/` (ignored by git).
+### Secrets / machine-local
 
-## Repo conventions
+Do not commit secrets. Use templates:
+- `~/.config/zsh/secrets.zsh` ← `zsh/.config/zsh/secrets.example.zsh`
+- `~/.config/zsh/local.zsh` ← `zsh/.config/zsh/local.example.zsh`
 
-- Packages are top-level directories (`zsh/`, `git/`, …).
-- Inside each package, paths are relative to `$HOME` (e.g. `zsh/.config/zsh/...`).
+### Convention
 
-## Important paths
-
-- `~/.config/zsh/` — zsh modules (`env.zsh`, `plugins.zsh`, `aliases.zsh`, `functions.zsh`, …)
-- `~/.config/zsh/secrets.zsh` — real secrets (local-only; not in git)
-- `~/.config/zsh/local.zsh` — per-machine overrides (local-only; not in git)
-- `~/.scripts/` — your scripts (tracked); synced into `~/.local/bin` by `~/.config/zsh/sync-scripts.zsh`
-- `~/.gitconfig` / `~/.git-themes` — git config and theme include
+Each top-level folder is a stow package, with paths relative to `$HOME`.
