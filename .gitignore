@@ -16,3 +16,8 @@ local/.claude/
 # Secrets - never commit actual values
 zsh/.config/zsh/secrets.zsh
 
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
