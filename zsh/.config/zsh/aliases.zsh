@@ -1,11 +1,12 @@
 #!/usr/bin/env zsh
 
 # Alias management
-# print aliases
-# edit alias
 # auto-completion/suggestion
 
 # Editing configs
+
+# TODO: needs to be fixed
+# /Users/ivan/proj/dotfiles-stow/zsh/.config/zsh
 alias hz='hx ~/.zshrc'
 alias hxal='hx ~/.config/zsh/aliases.zsh'
 
@@ -96,22 +97,19 @@ lsa() {
 # List all running processes
 alias psg='ps aux | grep'
 
-# Search for brew packages by keyword in their description
-alias brew-discover='brew search --desc --eval-all'
-
-# list all packages installed with brew with short descriptions
-# List installed Homebrew formulae + casks with descriptions.
-# Implemented as a function to avoid zsh glob/quoting issues with jq filters.
-alias brew-installed='brew_installed'
+# Homebrew-specific aliases (only when brew is available)
+if command -v brew >/dev/null 2>&1; then
+  # Search for brew packages by keyword in their description
+  alias brew-discover='brew search --desc --eval-all'
+  # list all packages installed with brew with short descriptions
+  alias brew-installed='brew_installed'
+  alias bs='brew search'
+  alias bi='brew info'
+  alias bsd='brew search --desc'
+fi
 
 # claude for laziest
 alias cla='claude'
-
-# brew search ?? might not work though
-alias bs='brew search'
-
-# brew info - get info on that bish
-alias bi='brew info'
 
 # ya
 alias c1='sherlock'
@@ -119,29 +117,39 @@ alias c1='sherlock'
 # antigravity.google
 alias ag='antigravity'
 
-# brew search with descriptions
-alias bsd='brew search --desc'
-
 # kiro-cli shortcut
 alias qq='kiro-cli'
 alias kira='kiro-cli'
+alias kiro='kiro-cli'
 
 # docker = opposite of intuitive
 alias lzdock='lazydocker'
 
-# File managers
-alias nimble="open -a 'Nimble Commander'"
-alias bloom="open -a Bloom"
-alias marta="open -a Marta"
-
-# Opens GUI Finder in current folder (BOOORINGGGG)
-alias finder='open -R .'
-
-# List all ghosty theme names
-alias ghthemes='lsd -1N --icon never /Applications/Ghostty.app/Contents/Resources/ghostty/themes/'
-
 # stylish csv table printing
 alias csvcat='tennis'
 
-# logic
-alias gotosamples='cd "/Library/Application Support/Logic/Ultrabeat Samples/Epic Electro/"'
+# macOS-only aliases
+if [[ "$(uname)" == "Darwin" ]]; then
+  # File managers
+  alias nimble="open -a 'Nimble Commander'"
+  alias bloom="open -a Bloom"
+  alias marta="open -a Marta"
+  # Opens GUI Finder in current folder
+  alias finder='open -R .'
+  # List all Ghostty theme names
+  alias ghthemes='lsd -1N --icon never /Applications/Ghostty.app/Contents/Resources/ghostty/themes/'
+  # Logic Pro samples
+  alias gotosamples='cd "/Library/Application Support/Logic/Ultrabeat Samples/Epic Electro/"'
+fi
+
+# Fuzzy-select Github PR to checkout
+alias gh-prcheckout='gh pr list | fzf | awk '\''{print }'\'' | xargs gh pr checkout'
+
+# Codex, duh
+alias cx='codex'
+
+# exiftool ALL
+alias xif='exiftool -a -u -g -ee -api largefilechunks=1'
+
+# list usbs via diskutil
+alias usblist='diskutil list | grep -i external'

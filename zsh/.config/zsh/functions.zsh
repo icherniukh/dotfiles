@@ -1,9 +1,6 @@
 #!/usr/bin/env zsh
 
-source $HOME/.config/wezaliases.zsh
-
-# functions.zsh: Publicly-safe functions.
-# (Internal Amazon API functions moved to git-ignored local.zsh)
+[[ -f "$HOME/.config/wezaliases.zsh" ]] && source "$HOME/.config/wezaliases.zsh"
 
 function cf() {
 	clifm "--cd-on-quit" "$@"
@@ -126,7 +123,7 @@ brew_installed() {
     if [[ -f "$cache_file" ]]; then
       local now mtime age
       now="$(date +%s)"
-      if mtime="$(stat -f %m "$cache_file" 2>/dev/null)"; then
+      if mtime="$(stat -f %m "$cache_file" 2>/dev/null || stat -c %Y "$cache_file" 2>/dev/null)"; then
         age=$((now - mtime))
         if (( age < cache_ttl_seconds )); then
           command cat -- "$cache_file"

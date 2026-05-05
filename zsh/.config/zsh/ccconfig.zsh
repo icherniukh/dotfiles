@@ -3,7 +3,8 @@
 # ============================================================================
 
 # Enable telemetry
-export CLAUDE_CODE_ENABLE_TELEMETRY=1
+export CLAUDE_CODE_ENABLE_TELEMETRY=0
+# export CLAUDE_CODE_ENABLE_TELEMETRY=1
 
 # ============================================================================
 # EXPORTER CONFIGURATION
