@@ -145,6 +145,9 @@ A-S-right = "extend_next_sub_word_end"
 esc = ["collapse_selection", "keep_primary_selection", "normal_mode"]
 0   = "goto_line_start"
 
+[keys.select.tab]
+p = "@|plz "
+
 # TODO: set up leader key
 # 1) leader: selection+extend
 # 2) leader: cut/yank/delete

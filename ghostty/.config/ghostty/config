@@ -14,7 +14,7 @@ font-variation-bold=
 font-variation-italic=
 font-variation-bold-italic=
 font-codepoint-map=
-font-thicken=true
+font-thicken=false
 
 adjust-cell-width=
 adjust-cell-height=
@@ -66,6 +66,9 @@ background-blur-radius=30
 # unfocused-split-fill = #1a3232
 # unfocused-split-fill = #1a3a3a
 unfocused-split-fill = #3a1a3a
+
+# split-divider-color = #fc644d
+split-divider-color = #f92672
 unfocused-split-opacity=0.420
 
 minimum-contrast=1
@@ -108,10 +111,8 @@ window-padding-y=2
 window-padding-balance=true
 
 # NEW: 06/10/2025
-# window-border-color = #333333
-# window-border-width = 2
-# window-border-color-active = #00FF00
-# window-border-color-inactive = #666666
+# Note: Ghostty has no window-border-color/width config.
+# Window borders are controlled by macOS/window-decoration settings.
 
 window-padding-color=extend
 # window-padding-color=background
@@ -206,7 +207,7 @@ macos-titlebar-style=native
 
 macos-titlebar-proxy-icon=visible
 
-macos-option-as-alt=
+macos-option-as-alt=left
 
 macos-window-shadow=true
 
@@ -707,5 +708,12 @@ keybind=super+v=paste_from_clipboard
 
 # Unbind Shift+Enter for Claude Code
 # keybind=shift+enter=unbind
+
+# Random tab color: sends script path + enter to shell
+# Saves current line (Ctrl+A Ctrl+K), runs script, restores (Ctrl+Y)
+# Random tab color — handled by Hammerspoon (Cmd+Shift+M)
+
+# Hyperkey+2 → quick terminal (global, works even when Ghostty isn't focused)
+keybind=global:super+ctrl+alt+shift+two=toggle_quick_terminal
 
 
