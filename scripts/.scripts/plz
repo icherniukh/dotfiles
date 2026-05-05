@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage:
+  plz [--engine codex|claude] [--dry-run] "instruction"
+
+Reads selected text from stdin and sends it to the chosen LLM with the
+instruction. Writes the model result to stdout so editors can replace the
+selection directly.
+
+Examples:
+  echo 'def f(): pass' | plz "refactor this function into one dictionary"
+  pbpaste | plz --engine claude "rewrite this to be less vague"
+
+Environment:
+  PLZ_ENGINE         Default engine if --engine is not provided. Default: codex
+  PLZ_CODEX_MODEL    Optional model override for codex exec. Default: gpt-5.4-mini
+  PLZ_CLAUDE_MODEL   Optional model override for claude -p
+EOF
+}
+
+engine="${PLZ_ENGINE:-codex}"
+dry_run=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --engine)
+      if [[ $# -lt 2 ]]; then
+        echo "plz: --engine requires a value" >&2
+        exit 2
+      fi
+      engine="$2"
+      shift 2
+      ;;
+    --dry-run)
+      dry_run=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "plz: unknown option: $1" >&2
+      exit 2
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+if [[ $# -eq 0 ]]; then
+  echo "plz: missing instruction" >&2
+  usage >&2
+  exit 2
+fi
+
+instruction="$*"
+selected_text="$(cat)"
+
+if [[ -z "${selected_text}" ]]; then
+  echo "plz: expected selected text on stdin" >&2
+  exit 2
+fi
+
+prompt=$(cat <<EOF
+You are receiving selected text from an editor and a user instruction.
+
+Apply the instruction to the selected text.
+
+Output rules:
+- Return only the final result.
+- Do not add commentary, labels, or markdown fences unless the instruction explicitly asks for them.
+- If the instruction asks for an explanation instead of a rewrite, return only that explanation.
+
+Instruction:
+${instruction}
+
+Selected text:
+${selected_text}
+EOF
+)
+
+if [[ "${dry_run}" -eq 1 ]]; then
+  printf '%s\n' "${prompt}"
+  exit 0
+fi
+
+case "${engine}" in
+  codex)
+    codex_model="${PLZ_CODEX_MODEL:-gpt-5.4-mini}"
+    output_file="$(mktemp)"
+    error_file="$(mktemp)"
+    cleanup() {
+      rm -f "${output_file}"
+      rm -f "${error_file}"
+    }
+    trap cleanup EXIT
+    codex_cmd=(
+      codex exec
+      --skip-git-repo-check
+      --sandbox read-only
+      --color never
+      --model "${codex_model}"
+      --output-last-message "${output_file}"
+    )
+    if ! printf '%s\n' "${prompt}" | "${codex_cmd[@]}" - >/dev/null 2>"${error_file}"; then
+      cat "${error_file}" >&2
+      exit 1
+    fi
+    cat "${output_file}"
+    ;;
+  claude)
+    claude_cmd=(
+      claude
+      -p
+      --output-format text
+      --permission-mode default
+      --tools ""
+    )
+    if [[ -n "${PLZ_CLAUDE_MODEL:-}" ]]; then
+      claude_cmd+=(--model "${PLZ_CLAUDE_MODEL}")
+    fi
+    printf '%s\n' "${prompt}" | "${claude_cmd[@]}"
+    ;;
+  *)
+    echo "plz: unsupported engine: ${engine}" >&2
+    echo "plz: supported engines: codex, claude" >&2
+    exit 2
+    ;;
+esac
