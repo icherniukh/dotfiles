@@ -5,8 +5,6 @@
 
 # Editing configs
 
-# TODO: needs to be fixed
-# /Users/ivan/proj/dotfiles-stow/zsh/.config/zsh
 alias hz='hx ~/.zshrc'
 alias hxal='hx ~/.config/zsh/aliases.zsh'
 

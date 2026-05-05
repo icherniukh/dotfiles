@@ -101,7 +101,7 @@ cat > "$workflow_path/Contents/document.wflow" << 'EOF'
 					<key>COMMAND_STRING</key>
 					<string>for f in "$@"
 do
-    /Users/ivan/proj/dotfiles-stow/scripts/.scripts/audio2ko2 "$f"
+	    "$HOME/.scripts/audio2ko2" "$f"
 done</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>

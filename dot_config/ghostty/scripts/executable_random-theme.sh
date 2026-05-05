@@ -1,6 +1,7 @@
 #!/bin/bash
 
 THEMES_DIR="/Applications/Ghostty.app/Contents/Resources/ghostty/themes"
+CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config"
 
 THEME_FILES=($THEMES_DIR/*)
 
@@ -17,9 +18,11 @@ ghostty --theme=$THEME_NAME
 
 echo "  ## new theme: $THEME_NAME"
 
-echo theme=$THEME_NAME >> ~/.config/ghostty.toml
+mkdir -p "$(dirname "$CONFIG_FILE")"
+if grep -q '^theme=' "$CONFIG_FILE" 2>/dev/null; then
+    sed -i '' "s/^theme=.*/theme=$THEME_NAME/" "$CONFIG_FILE"
+else
+    printf '\ntheme=%s\n' "$THEME_NAME" >> "$CONFIG_FILE"
+fi
 
-ghostty -e reload_config
 ghostty +reload_config
-ghostty reload_config
-

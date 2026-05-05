@@ -1,56 +1,62 @@
-# Dotfiles (GNU Stow)
+# Dotfiles (chezmoi)
 
-Transparent, symlink-based dotfiles managed with GNU Stow.
+Personal dotfiles managed with chezmoi.
 
 ## Install
 
 ```bash
-brew install stow
+brew install chezmoi
+chezmoi init --source ~/proj/dotfiles-stow
 ```
 
 ## Usage
 
 ```bash
-# Dry run
-stow -nvt ~ zsh git fzf scripts
+# Inspect pending changes
+chezmoi status
+chezmoi diff
 
 # Apply
-stow -vt ~ zsh git fzf scripts
+chezmoi apply
 
-# Remove
-stow -Dvt ~ zsh
+# Edit the source tree
+chezmoi cd
 ```
 
-### Packages
+### Managed Paths
 
 Core:
-- `zsh/` → `~/.zshrc`, `~/.zprofile`, `~/.zshenv`, `~/.profile`, `~/.config/zsh/*`
-- `git/` → `~/.gitconfig`, `~/.git-themes`
-- `fzf/` → `~/.config/fzf/fzf.zsh`
-- `scripts/` → `~/.scripts/*`
+- `dot_zshrc`, `dot_zprofile`, `dot_zshenv`, `dot_profile` -> shell startup files in `$HOME`
+- `dot_config/zsh/` -> `~/.config/zsh/`
+- `dot_gitconfig`, `dot_git-themes` -> Git config and themes
+- `dot_config/fzf/` -> `~/.config/fzf/`
+- `dot_scripts/` -> `~/.scripts/`
 
 Optional app configs:
-- `wez/` → `~/.config/wezmux.zsh`, `~/.config/wezaliases.zsh`
-- `ghostty/` → `~/.config/ghostty/*`
-- `helix/` → `~/.config/helix/*`
-- `lazygit/` → `~/.config/lazygit/config.yml`
-- `lsd/` → `~/.config/lsd/config.yml`
-- `ripgrep/` → `~/.config/ripgrep/config`
-- `starship/` → `~/.config/starship.toml`
-- `procs/` → `~/.config/procs.toml`
-- `yazi/` → `~/.config/yazi/*`
+- `dot_config/ghostty/` -> `~/.config/ghostty/`
+- `dot_config/helix/` -> `~/.config/helix/`
+- `dot_config/lazygit/` -> `~/.config/lazygit/`
+- `dot_config/lsd/` -> `~/.config/lsd/`
+- `dot_config/ripgrep/` -> `~/.config/ripgrep/`
+- `dot_config/starship.toml` -> `~/.config/starship.toml`
+- `dot_config/procs.toml` -> `~/.config/procs.toml`
+- `dot_config/yazi/` -> `~/.config/yazi/`
+- `dot_hammerspoon/` -> `~/.hammerspoon/`
 
 ### First-time setup
 
-1. `stow -nvt ~ zsh` and inspect conflicts
-2. Move conflicting files aside, or use `stow --adopt -vt ~ zsh`
+1. Run `chezmoi diff` and inspect conflicts.
+2. Move conflicting files aside or import them deliberately with `chezmoi add`.
+3. Run `chezmoi apply`.
 
 ### Secrets / machine-local
 
 Do not commit secrets. Use templates:
-- `~/.config/zsh/secrets.zsh` ← `zsh/.config/zsh/secrets.example.zsh`
-- `~/.config/zsh/local.zsh` ← `zsh/.config/zsh/local.example.zsh`
+- `~/.config/zsh/secrets.zsh` from `dot_config/zsh/secrets.example.zsh`
+- `~/.config/zsh/local.zsh` from `dot_config/zsh/local.example.zsh`
+
+Actual local files are intentionally ignored in the source tree.
 
 ### Convention
 
-Each top-level folder is a stow package, with paths relative to `$HOME`.
+chezmoi source names map to home-directory paths: `dot_` becomes `.`, `executable_` sets executable mode, `readonly_` sets read-only mode, and `symlink_` creates a symlink whose target is the file content.

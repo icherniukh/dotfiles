@@ -38,7 +38,7 @@ unset _vivid_cache
 
 # History settings
 # NOTE: HISTORY_SECRET should be set in local ~/.config/zsh/secrets.zsh
-# See zsh/.config/zsh/secrets.example.zsh for reference
+# See dot_config/zsh/secrets.example.zsh for source reference.
 HISTSIZE=6969420
 SAVEHIST=6969420
 
