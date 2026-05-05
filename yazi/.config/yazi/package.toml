@@ -1,32 +1,32 @@
 [[plugin.deps]]
 use = "pirafrank/what-size"
-rev = "a36fdaf"
-hash = "c5c38bb8cd68d4426471efe0013ca0ac"
+rev = "179ebf6"
+hash = "57056b9728006881d580ccabe8154a9c"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:git"
-rev = "398796d"
-hash = "73788c7dc5827ef4677c502c3ea8fa19"
+rev = "babfd0f"
+hash = "26db011a778f261d730d4f5f8bf24b3f"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:diff"
-rev = "398796d"
-hash = "492e4757f332e29f982556bf507e043c"
+rev = "babfd0f"
+hash = "8b1af6b5a69797ee951f2a80ce570818"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:vcs-files"
-rev = "398796d"
-hash = "4ee57085277d616acfa0ef1fef37dc00"
+rev = "babfd0f"
+hash = "6b141fbed3c74b45558fbc7088c805ee"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:mime-ext"
-rev = "398796d"
-hash = "48a77ab785d1ee73bc2d7bbe2a4c2090"
+rev = "babfd0f"
+hash = "31994c9caec5bdcafd994e9b00c632a4"
 
 [[plugin.deps]]
 use = "yazi-rs/plugins:full-border"
-rev = "398796d"
-hash = "3996fc74044bc44144b323686f887e1"
+rev = "babfd0f"
+hash = "6fa6a05a81c98dd000fbca3cca6e9682"
 
 [[plugin.deps]]
 use = "Reledia/glow"
@@ -42,6 +42,11 @@ hash = "ed3363e256e210593f0f8e4cec3e36a9"
 use = "yazi-rs/plugins:piper"
 rev = "8f1d971"
 hash = "64713dcd74daf9ec644883a5895e5d1"
+
+[[plugin.deps]]
+use = "yazi-rs/plugins:mactag"
+rev = "babfd0f"
+hash = "9e606c2cc7dd3139868d462e3e2e994c"
 
 [[flavor.deps]]
 use = "BennyOe/tokyo-night"

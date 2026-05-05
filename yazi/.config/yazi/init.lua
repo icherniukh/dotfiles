@@ -1,9 +1,12 @@
-require("full-border"):setup()
+
 require("git"):setup()
 
-require("mime-ext"):setup {
+require("full-border"):setup()
+
+require("mime-ext.local"):setup {
 	-- Expand the existing filename database (lowercase), for example:
 	with_files = {
+		makefile = "text/makefile",
 		Config = "text/perl",
 		-- ...
 	},
@@ -14,12 +17,30 @@ require("mime-ext"):setup {
 		-- ...
 	},
 
-	-- If the mime-type is not in both filename and extension databases,
-	-- then fallback to Yazi's preset `mime` plugin, which uses `file(1)`
-	fallback_file1 = true,
+	-- If the MIME type is not in both filename and extension databases,
+	-- then fallback to Yazi's preset `mime.local` plugin, which uses `file(1)`
+	fallback_file1 = false,
 }
 
--- require("git"):setup()
+require("mactag"):setup {
+	keys = {
+		r = "Red",
+		o = "Orange",
+		y = "Yellow",
+		g = "Green",
+		b = "Blue",
+		p = "Purple",
+	},
+	colors = {
+		Red = "#ee7b70",
+		Orange = "#f5bd5c",
+		Yellow = "#fbe764",
+		Green = "#91fc87",
+		Blue = "#5fa3f8",
+		Purple = "#cb88f8",
+	},
+}
+
 -- require("starship"):setup()
 -- require("simple-status"):setup()
 
