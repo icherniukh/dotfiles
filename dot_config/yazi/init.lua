@@ -41,6 +41,39 @@ require("mactag"):setup {
 	},
 }
 
+local path_sep = package.config:sub(1, 1)
+local home_path = os.getenv("HOME")
+local bookmarks = {
+	{
+		tag = "Home",
+		path = home_path .. path_sep,
+		key = "h",
+	},
+	{
+		tag = "Projects",
+		path = home_path .. path_sep .. "proj" .. path_sep,
+		key = "p",
+	},
+	{
+		tag = "Downloads",
+		path = home_path .. path_sep .. "Downloads" .. path_sep,
+		key = "d",
+	},
+	{
+		tag = "Config",
+		path = home_path .. path_sep .. ".config" .. path_sep,
+		key = "c",
+	},
+}
+
+require("yamb"):setup {
+	bookmarks = bookmarks,
+	jump_notify = true,
+	cli = "fzf",
+	keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+	path = home_path .. path_sep .. ".config" .. path_sep .. "yazi" .. path_sep .. "bookmark",
+}
+
 -- require("starship"):setup()
 -- require("simple-status"):setup()
 

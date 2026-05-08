@@ -1,0 +1,39 @@
+// Yazelix settings. Edit with `yzx config`/your editor; schema metadata powers future UI discovery.
+{
+  "editor": {
+    "command": "hx",
+    "hide_sidebar_on_file_open": false,
+    "sidebar_width_percent": 24
+  },
+  "shell": {
+    "default_shell": "zsh"
+  },
+  "terminal": {
+    "config_mode": "yazelix",
+    "terminals": [
+      "ghostty",
+      "wezterm",
+      "kitty"
+    ],
+    "transparency": "medium"
+  },
+  "zellij": {
+    "popup_height_percent": 90,
+    "popup_program": [
+      "lazygit"
+    ],
+    "popup_width_percent": 90,
+    "theme": "kanagawa"
+  },
+  "yazi": {
+    "command": "yazi",
+    "plugins": [
+      "git",
+      "full-border",
+      "yamb"
+    ],
+    "sort_by": "natural",
+    "theme": "kanagawa",
+    "ya_command": "ya"
+  }
+}

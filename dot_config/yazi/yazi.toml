@@ -26,14 +26,14 @@ edit = [{ run = '$EDITOR "$@"', block = true }]
 
 rules = [
   { mime = "text/*", use = "edit" },
-  { name = "*.json", use = "edit" },
-  { name = "*.xml", use = "edit" },
-  { name = "Config", use = "edit" },
-  { name = "*.conf", use = "edit" },
-  { name = "*.py", use = "edit" },
+  { url = "*.json", use = "edit" },
+  { url = "*.xml", use = "edit" },
+  { url = "Config", use = "edit" },
+  { url = "*.conf", use = "edit" },
+  { url = "*.py", use = "edit" },
   { mime = "application/json", use = "edit" },
-  # { name = "*.xml", use = "edit" },
-  # 	{ name = "*.html", use = [ "open", "edit" ] },
+  # { url = "*.xml", use = "edit" },
+  # 	{ url = "*.html", use = [ "open", "edit" ] },
 ]
 
 [preview]
@@ -57,29 +57,29 @@ image_bound = [0, 0]
 [plugin]
 
 prepend_fetchers = [
-  { id = "git", url = "*", run = "git" },
-  { id = "git", url = "*/", run = "git" },
-  { id = "mime", url = "local://*", run = "mime-ext.local", prio = "high" },
-  { id = "mime", url = "remote://*", run = "mime-ext.remote", prio = "high" },
-  { id = "mactag", url = "*", run = "mactag" },
-  { id = "mactag", url = "*/", run = "mactag" },
+  { id = "git", group = "file", url = "*", run = "git" },
+  { id = "git", group = "directory", url = "*/", run = "git" },
+  { id = "mime", group = "file", url = "local://*", run = "mime-ext.local", prio = "high" },
+  { id = "mime", group = "file", url = "remote://*", run = "mime-ext.remote", prio = "high" },
+  { id = "mactag", group = "file", url = "*", run = "mactag" },
+  { id = "mactag", group = "directory", url = "*/", run = "mactag" },
 ]
 
 prepend_previewers = [
-  # { name = "*.md", run = "code" },
-  { name = "*.xml", run = "code" },
-  { name = "*.json", run = "code" },
-  { name = "Config", run = "code" },
-  { name = "*.bin", run = "hexyl" },
-  { name = "*.hex", run = "hexyl" },
-  { name = "*.md", run = "code" },
-  # { name = "*.lua", run = "code" },
-  # { name = "*.csv", run = "rich" },
-  # { name = "*.md", run = "mcat" },
-  # { name = "*.rst", run = "rich-preview"}, # for restructured text (.rst) files
-  # { name = "*.ipynb", run = "rich-preview"}, # for jupyter notebooks (.ipynb)
-  # { name = "*.json", run = "rich-preview"}, # for json (.json) files
-  #    { name = "*.lang_type", run = "rich-preview"} # for particular language files eg. .py, .go., .lua, etc.
+  # { url = "*.md", run = "code" },
+  { url = "*.xml", run = "code" },
+  { url = "*.json", run = "code" },
+  { url = "Config", run = "code" },
+  { url = "*.bin", run = "hexyl" },
+  { url = "*.hex", run = "hexyl" },
+  { url = "*.md", run = "code" },
+  # { url = "*.lua", run = "code" },
+  # { url = "*.csv", run = "rich" },
+  # { url = "*.md", run = "mcat" },
+  # { url = "*.rst", run = "rich-preview"}, # for restructured text (.rst) files
+  # { url = "*.ipynb", run = "rich-preview"}, # for jupyter notebooks (.ipynb)
+  # { url = "*.json", run = "rich-preview"}, # for json (.json) files
+  #    { url = "*.lang_type", run = "rich-preview"} # for particular language files eg. .py, .go., .lua, etc.
 ]
 
 [log]

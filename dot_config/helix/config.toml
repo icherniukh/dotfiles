@@ -100,6 +100,7 @@ C-o="expand_selection"
 C-i="shrink_selection"
 C-n=["search_selection", "search_next"]
 "C-/"="search_selection"
+A-r = ':sh command -v yzx >/dev/null 2>&1 && yzx reveal "%{buffer_name}"'
 
 "g" = { a = "code_action" }
 "G" = ["goto_last_line"]
