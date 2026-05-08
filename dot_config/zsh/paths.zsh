@@ -2,6 +2,10 @@
 export PATH="$HOME/.local/bin:$HOME/.scripts:$PATH"
 [[ -d "$HOME/.cargo/bin" ]] && export PATH="$HOME/.cargo/bin:$PATH"
 
+# Nix is installed system-wide on macOS, but non-login shells do not always
+# source /etc/profile.d automatically.
+[[ -f /etc/profile.d/nix.sh ]] && source /etc/profile.d/nix.sh
+
 # Package manager core bins
 [[ -n "${BREW_PREFIX:-}" ]] && export PATH="${BREW_PREFIX}/bin:${BREW_PREFIX}/sbin:$PATH"
 

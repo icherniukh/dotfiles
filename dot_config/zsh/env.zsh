@@ -14,6 +14,7 @@ if [[ -z "${BREW_PREFIX:-}" ]]; then
   fi
 fi
 export BREW_PREFIX
+export HOMEBREW_NO_ENV_HINTS=1
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 
 # XDG paths
