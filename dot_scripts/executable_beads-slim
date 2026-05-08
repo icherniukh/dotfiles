@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -eq 0 ]]; then
+  set -- .
+fi
+
+python3 - "$@" <<'PY'
+from pathlib import Path
+import sys
+
+prime = """# Beads
+
+- Use `bd` only for long-horizon tracked work.
+- Core: `bd ready`, `bd show <id>`, `bd create ...`, `bd update <id> --claim`, `bd close <id>`.
+- Avoid `bd edit` in agent sessions.
+- Use `bd remember` only for evergreen facts not already captured in issue descriptions.
+- Update issue state before ending work.
+"""
+
+block = """<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal -->
+## Beads Issue Tracker
+
+This project uses **bd (beads)** for issue tracking.
+
+- Run `bd prime` for the current workflow context.
+- Core commands: `bd ready`, `bd show <id>`, `bd update <id> --claim`, `bd close <id>`.
+- Use `bd` for persistent task tracking instead of markdown TODO lists.
+- Use `bd remember` only for evergreen facts not already captured well in issue descriptions.
+<!-- END BEADS INTEGRATION -->"""
+
+start = '<!-- BEGIN BEADS INTEGRATION'
+end = '<!-- END BEADS INTEGRATION -->'
+
+for raw in sys.argv[1:]:
+    repo = Path(raw).expanduser().resolve()
+    beads = repo / '.beads'
+    if not beads.is_dir():
+        print(f'skip {repo}: no .beads/')
+        continue
+
+    prime_path = beads / 'PRIME.md'
+    prime_path.write_text(prime)
+    print(f'prime {prime_path}')
+
+    exclude = repo / '.git' / 'info' / 'exclude'
+    if exclude.exists():
+        lines = exclude.read_text().splitlines()
+        if '.beads/PRIME.md' not in lines:
+            with exclude.open('a') as f:
+                if exclude.stat().st_size and not exclude.read_text().endswith('\n'):
+                    f.write('\n')
+                f.write('.beads/PRIME.md\n')
+            print(f'exclude {exclude}')
+
+    for rel in ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md', 'docs/AGENTS.md'):
+        path = repo / rel
+        if not path.exists():
+            continue
+        txt = path.read_text()
+        if start in txt and end in txt:
+            a = txt.index(start)
+            b = txt.index(end) + len(end)
+            path.write_text(txt[:a] + block + txt[b:])
+            print(f'patch {path}')
+PY
