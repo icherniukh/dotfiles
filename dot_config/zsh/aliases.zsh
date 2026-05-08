@@ -127,7 +127,7 @@ alias lzdock='lazydocker'
 alias csvcat='tennis'
 
 # macOS-only aliases
-if [[ "$(uname)" == "Darwin" ]]; then
+if [[ "$OSTYPE" == darwin* ]]; then
   # File managers
   alias nimble="open -a 'Nimble Commander'"
   alias bloom="open -a Bloom"

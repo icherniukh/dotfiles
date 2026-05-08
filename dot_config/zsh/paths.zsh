@@ -10,7 +10,7 @@ export PATH="$HOME/.local/bin:$HOME/.scripts:$PATH"
 [[ -n "${BREW_PREFIX:-}" ]] && export PATH="${BREW_PREFIX}/bin:${BREW_PREFIX}/sbin:$PATH"
 
 # MacPorts (macOS only)
-[[ "$(uname)" == "Darwin" && -d /opt/local/bin ]] && export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
+[[ "$OSTYPE" == darwin* && -d /opt/local/bin ]] && export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
 
 # Homebrew Ruby - main binaries
 [[ -n "${BREW_PREFIX:-}" ]] && export PATH="${BREW_PREFIX}/opt/ruby/bin:$PATH"

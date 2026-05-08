@@ -70,6 +70,7 @@ _eval_init() {
 # Load tv's own shell init first; the custom dispatcher below only changes completion candidates.
 _eval_init tv init zsh
 # Override upstream `_tv` to group flags and add dynamic channels from `tv list-channels`.
+if command -v tv >/dev/null 2>&1; then
 _tv_complete() {
   case $words[2] in
     -*)
@@ -103,10 +104,10 @@ _tv_complete() {
   esac
 }
 compdef _tv_complete tv
+fi
 unset -f _eval_init
 export CLAUDE_CODE_NO_FLICKER=1
 export PATH="$HOME/bin:$PATH"
-export PATH="$HOME/venvs/transcribe/bin:$PATH"
 
 if [[ "$ZPROF" = true ]]; then
   echo "  ## Finished ZPROF"

@@ -3,3 +3,8 @@ AGENTS.md
 CLAUDE.md
 .beads/
 .gitignore
+
+{{ if ne .chezmoi.os "darwin" }}
+dot_config/ghostty/
+dot_hammerspoon/
+{{ end }}
