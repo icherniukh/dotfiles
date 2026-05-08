@@ -15,7 +15,11 @@ if [[ -z "${BREW_PREFIX:-}" ]]; then
 fi
 export BREW_PREFIX
 export HOMEBREW_NO_ENV_HINTS=1
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+if command -v bat >/dev/null 2>&1; then
+  export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+else
+  export MANPAGER="less -R"
+fi
 
 # XDG paths
 export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
@@ -31,7 +35,7 @@ mkdir -p "$ZSH_CACHE_DIR" "$(dirname "$HISTFILE")" >/dev/null 2>&1
 # Color/theme defaults
 # Cache LS_COLORS — only regenerate if vivid binary is newer than cache
 _vivid_cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/ls_colors"
-if [[ ! -f "$_vivid_cache" || "$(command -v vivid)" -nt "$_vivid_cache" ]]; then
+if command -v vivid >/dev/null 2>&1 && [[ ! -f "$_vivid_cache" || "$(command -v vivid)" -nt "$_vivid_cache" ]]; then
   vivid generate one-dark >| "$_vivid_cache" 2>/dev/null
 fi
 [[ -f "$_vivid_cache" ]] && export LS_COLORS=$(<"$_vivid_cache")
