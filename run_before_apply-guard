@@ -68,32 +68,55 @@ else
   fail "missing dot_zsh_plugins.txt — plugin list must be tracked"
 fi
 
-# --- 3. Secrets scan (tracked source files only) ---
-scan_secrets() {
-  local pattern='(sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}|-----BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY-----)'
-  local hits=0
-  while IFS= read -r -d '' f; do
-    case "$f" in
-      *.example.*|*secrets.example*|*README*|*AGENTS*|*CLAUDE*|*.md) continue ;;
-    esac
-    if grep -Eiq "$pattern" "$f" 2>/dev/null; then
-      fail "possible secret in ${f#"$ROOT"/}"
-      grep -Ein "$pattern" "$f" 2>/dev/null | head -3
-      hits=1
-    fi
-  done < <(find "$ROOT" -type f \
-    \( -path "$ROOT/dot_*" -o -path "$ROOT/dot_config/*" -o -path "$ROOT/dot_scripts/*" -o -path "$ROOT/run_*" \) \
-    ! -path '*/.git/*' \
-    ! -path '*/.beads/*' \
-    ! -path '*/.claude/plugins/cache/*' \
-    ! -path '*/.claude/plugins/marketplaces/*' \
-    ! -name '*.zwc' \
-    ! -name '*.png' \
-    ! -name '*.jpg' \
-    -print0)
-  [[ "$hits" -eq 0 ]] && ok "no obvious secrets in source tree"
+# --- 3. hk checks (gitleaks + detect_private_key + quality) ---
+run_hk_checks() {
+  local hk_pkl staging staging_script
+
+  hk_pkl="$ROOT/hk.pkl"
+  staging_script="$ROOT/dot_scripts/executable_hk-chezmoi-staging"
+
+  if [[ ! -f "$hk_pkl" ]]; then
+    fail "missing hk.pkl — add hk config for secret scanning"
+    return
+  fi
+
+  if ! command -v hk >/dev/null 2>&1; then
+    warn "hk not installed — skipping hk checks (brew install hk)"
+    return
+  fi
+
+  if [[ ! -x "$staging_script" ]]; then
+    fail "missing executable $staging_script"
+    return
+  fi
+
+  if ! staging="$("$staging_script" "$ROOT")"; then
+    fail "hk staging failed"
+    return
+  fi
+
+  if (cd "$staging" && hk check --step gitleaks --step detect_private_key --all -q); then
+    ok "hk secret scan passed (gitleaks + detect_private_key)"
+  else
+    fail "hk secret scan failed — run: staging=\$(hk-chezmoi-staging \"$ROOT\") && cd \"\$staging\" && hk check --step gitleaks --step detect_private_key --all"
+    yellow "       full log: ${XDG_STATE_HOME:-$HOME/.local/state}/hk/output.log"
+    rm -rf "$staging"
+    return
+  fi
+
+  if (cd "$staging" && hk check \
+      --step check_executables_have_shebangs \
+      --step check_merge_conflict \
+      --step check_symlinks \
+      --all -q); then
+    ok "hk quality checks passed"
+  else
+    warn "hk quality checks failed — run: hk check --all in hk-chezmoi-staging dir"
+  fi
+
+  rm -rf "$staging"
 }
-scan_secrets
+run_hk_checks
 
 # --- 4. Live vs source drift on critical shell files ---
 if [[ -f "$HOME/.config/zsh/options.zsh" && -f "$options" ]]; then

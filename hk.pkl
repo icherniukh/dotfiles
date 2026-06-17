@@ -1,0 +1,57 @@
+amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtins.pkl"
+
+/// Chezmoi dotfiles checks. Secret scans run inside a staging directory
+/// (see dot_scripts/executable_hk-chezmoi-staging) so gitleaks does not
+/// walk the whole repo (.claude, plugin caches, etc.).
+
+local gitleaks_scoped = new Config.Step {
+  glob = "**/*"
+  exclude = List(
+    "**/*.example.*",
+    "**/secrets.example*",
+    "**/*.md",
+    "**/*.png",
+    "**/*.jpg",
+    "**/*.gif",
+    "**/*.svg",
+    "**/*.zwc",
+    "**/yazi/plugins/**",
+  )
+  types = List("text")
+  check = "gitleaks detect --no-git --redact --verbose --no-banner --source ."
+}
+
+local secrets = new Mapping<String, Step> {
+  ["gitleaks"] = gitleaks_scoped
+  ["detect_private_key"] = (Builtins.detect_private_key) {
+    exclude = List(
+      "**/*.example.*",
+      "**/secrets.example*",
+      "**/*.md",
+      "**/yazi/plugins/**",
+    )
+  }
+}
+
+local quality = new Mapping<String, Step> {
+  ["check_executables_have_shebangs"] = Builtins.check_executables_have_shebangs
+  ["check_merge_conflict"] = Builtins.check_merge_conflict
+  ["check_symlinks"] = Builtins.check_symlinks
+  ["shellcheck"] = (Builtins.shellcheck) {
+    glob = List("dot_scripts/**", "dot_config/**/*.sh", "run_*")
+  }
+}
+
+hooks {
+  ["secrets"] {
+    steps = secrets
+  }
+  ["check"] {
+    steps = secrets + quality
+  }
+  ["pre-commit"] {
+    stash = "git"
+    steps = secrets
+  }
+}
