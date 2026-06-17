@@ -1,1 +1,8 @@
-[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
+# Keep zshenv minimal. Runtime managers are initialized from ~/.zshrc via mise.
+# History must be configured here so zsh reads HISTFILE before .zshrc runs.
+
+: "${XDG_STATE_HOME:=$HOME/.local/state}"
+export HISTFILE="${XDG_STATE_HOME}/zsh/history"
+HISTSIZE=6969420
+SAVEHIST=6969420
+mkdir -p "${XDG_STATE_HOME}/zsh" 2>/dev/null

@@ -1,14 +1,19 @@
-# Plugin and completion setup (antidote + Homebrew extras)
+# Plugin and completion setup (antidote + carapace + fzf-tab + Homebrew extras)
 
-# Completions (run early so compdef exists for plugins)
+# Completions: compinit first, then antidote/fzf-tab, then carapace specs.
 if type brew &>/dev/null; then
   FPATH="${BREW_PREFIX}/share/zsh-completions:$FPATH"
 fi
-fpath=("$HOME/.local/share/zsh/site-functions" $fpath)
-autoload -Uz compinit
+fpath=("$ZSH_CONFIG_DIR/site-functions" "$HOME/.local/share/zsh/site-functions" $fpath)
 zmodload zsh/complist
+autoload -Uz compinit
 ZSH_COMPDUMP="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump-${ZSH_VERSION}"
-compinit -C -d "$ZSH_COMPDUMP"
+if [[ -s "$ZSH_COMPDUMP" && (! -s "${ZSH_COMPDUMP}.zwc" || "$ZSH_COMPDUMP" -nt "${ZSH_COMPDUMP}.zwc") ]]; then
+  compinit -C -d "$ZSH_COMPDUMP"
+else
+  compinit -d "$ZSH_COMPDUMP"
+fi
+unset ZSH_COMPDUMP
 
 zstyle ':completion:*' completer _expand _complete _ignored
 zstyle ':completion:*:descriptions' format '%F{yellow}%d%f'
@@ -17,14 +22,10 @@ zstyle ':completion:*' squeeze-slashes true
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}' 'r:|[._-]=* r:|=*'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
-# `fnm env --use-on-cd` installs the on-directory-change Node version hooks.
-if command -v fnm >/dev/null 2>&1; then
-  eval "$(fnm env --use-on-cd --shell zsh)"
-fi
-
 # Generate a static plugin bundle from `.zsh_plugins.txt` instead of resolving plugins on every shell start.
-zsh_plugins=~/.zsh_plugins.zsh
-if [[ ! -f $zsh_plugins || ~/.zsh_plugins.txt -nt $zsh_plugins ]]; then
+_zsh_plugins_src="${ZDOTDIR:-$HOME}/.zsh_plugins.txt"
+zsh_plugins="${ZDOTDIR:-$HOME}/.zsh_plugins.zsh"
+if [[ ! -f $zsh_plugins || "$_zsh_plugins_src" -nt $zsh_plugins ]]; then
   # Locate antidote: Homebrew (macOS/Linux) or system install
   _antidote_path=""
   if [[ -f "${BREW_PREFIX}/opt/antidote/share/antidote/antidote.zsh" ]]; then
@@ -34,10 +35,11 @@ if [[ ! -f $zsh_plugins || ~/.zsh_plugins.txt -nt $zsh_plugins ]]; then
   fi
   if [[ -n "$_antidote_path" ]]; then
     source "$_antidote_path"
-    antidote bundle <~/.zsh_plugins.txt >$zsh_plugins
+    antidote bundle <"$_zsh_plugins_src" >|$zsh_plugins
   fi
   unset _antidote_path
 fi
+unset _zsh_plugins_src
 # Only load widget-heavy plugins when zle has a real terminal to attach to.
 if [[ -t 0 && -t 1 ]]; then
   [[ -f $zsh_plugins ]] && source $zsh_plugins
@@ -71,6 +73,8 @@ if [[ -t 0 && -t 1 ]]; then
 
   [[ -f ${BREW_PREFIX}/share/forgit/forgit.plugin.zsh ]] && \
     source ${BREW_PREFIX}/share/forgit/forgit.plugin.zsh
+
+  [[ -f "${ZSH_CONFIG_DIR}/completion.zsh" ]] && source "${ZSH_CONFIG_DIR}/completion.zsh"
 fi
 
 command -v thefuck >/dev/null 2>&1 && thefuck() { unfunction thefuck; eval $(command thefuck --alias); thefuck "$@"; }

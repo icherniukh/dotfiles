@@ -1,0 +1,9 @@
+zpm-zsh/colors
+supercrabtree/k
+unixorn/fzf-zsh-plugin
+# zpm-zsh/clipboard  # disabled: breaks 'open' on macOS (autoload fails)
+zdharma-continuum/history-search-multi-word
+akash329d/zsh-alias-finder
+gretzky/auto-color-ls
+mfaerevaag/wd
+Aloxaf/fzf-tab

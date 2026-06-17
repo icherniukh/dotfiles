@@ -11,6 +11,8 @@ fi
 [[ -f "${ZSH_CONFIG_DIR}/paths.zsh" ]] && source "${ZSH_CONFIG_DIR}/paths.zsh"
 [[ -f "${ZSH_CONFIG_DIR}/options.zsh" ]] && source "${ZSH_CONFIG_DIR}/options.zsh"
 
+
+
 # Plugins/prompt
 [[ -f "${ZSH_CONFIG_DIR}/plugins.zsh" ]] && source "${ZSH_CONFIG_DIR}/plugins.zsh"
 [[ -f "${ZSH_CONFIG_DIR}/prompt.zsh" ]] && source "${ZSH_CONFIG_DIR}/prompt.zsh"
@@ -49,15 +51,6 @@ elif [[ -f /usr/share/autojump/autojump.zsh ]]; then
 elif [[ -f /usr/share/autojump/autojump.sh ]]; then
   source /usr/share/autojump/autojump.sh
 fi
-
-# Bun completions
-[[ -f "${HOME}/.bun/_bun" ]] && source "${HOME}/.bun/_bun"
-# Completion styling
-zstyle ':completion:*' menu select
-zstyle ':completion:*:descriptions' format '%F{yellow}%B── %d%b%f'
-zstyle ':completion:*:warnings' format '%F{red}no matches%f'
-zstyle ':completion:*' list-separator '  '
-zstyle ':completion:*' group-name ''
 
 # Eval shell init only when the generator succeeds and writes code to stdout.
 _eval_init() {
@@ -107,7 +100,7 @@ compdef _tv_complete tv
 fi
 unset -f _eval_init
 export CLAUDE_CODE_NO_FLICKER=1
-export PATH="$HOME/bin:$PATH"
+export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
 
 if [[ "$ZPROF" = true ]]; then
   echo "  ## Finished ZPROF"

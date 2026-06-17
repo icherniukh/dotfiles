@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# Merge recoverable zsh extended-history files into one canonical file.
+set -euo pipefail
+
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/zsh"
+OUT="${1:-$STATE_DIR/history}"
+BACKUP_DIR="$STATE_DIR/backups-$(date +%Y%m%d-%H%M%S)"
+
+sources=(
+  "$STATE_DIR/history"
+  "$STATE_DIR/.!33378!history"
+  "$HOME/proj/cli-configs/2025.personal.configs/home_zsh_history"
+  "$HOME/.zsh_history"
+)
+
+mkdir -p "$STATE_DIR" "$BACKUP_DIR"
+[[ -f "$STATE_DIR/history" ]] && cp -a "$STATE_DIR/history" "$BACKUP_DIR/history.pre-merge"
+
+python3 - "$OUT" "${sources[@]}" <<'PY'
+import sys
+from pathlib import Path
+
+out = Path(sys.argv[1])
+sources = [Path(p) for p in sys.argv[2:]]
+
+def parse_file(path: Path):
+    if not path.is_file():
+        return []
+    entries = []
+    pending = None
+    for raw in path.read_text(errors="replace").splitlines():
+        if raw.startswith(":") and ";" in raw:
+            if pending:
+                entries.append(pending)
+            try:
+                rest = raw[1:]
+                ts_str, cmd = rest.split(";", 1)
+                ts = int(ts_str.split(":")[0])
+                pending = (ts, raw)
+            except ValueError:
+                pending = None
+        elif pending and raw.endswith("\\"):
+            ts, line = pending
+            merged = line + "\n" + raw[:-1]
+            pending = (ts, merged)
+        elif pending:
+            ts, line = pending
+            pending = (ts, line + "\n" + raw)
+        # skip orphan continuation lines
+    if pending:
+        entries.append(pending)
+    return entries
+
+seen = {}
+for src in sources:
+    for ts, line in parse_file(src):
+        seen.setdefault(line, ts)
+
+merged = sorted(((ts, line) for line, ts in seen.items()), key=lambda x: x[0])
+out.parent.mkdir(parents=True, exist_ok=True)
+tmp = out.with_suffix(out.suffix + ".merged")
+tmp.write_text("\n".join(line for _, line in merged) + ("\n" if merged else ""))
+tmp.replace(out)
+print(f"Merged {len(merged)} unique entries -> {out}")
+if merged:
+    import datetime
+    lo = datetime.datetime.fromtimestamp(merged[0][0])
+    hi = datetime.datetime.fromtimestamp(merged[-1][0])
+    print(f"Range: {lo} -> {hi}")
+PY

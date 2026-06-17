@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+# Chezmoi pre-apply guard. Exits non-zero to abort `chezmoi apply`.
+set -euo pipefail
+
+# Chezmoi runs this from a sparse temp dir during apply — read sourceDir from config.
+_chezmoi_toml="${XDG_CONFIG_HOME:-$HOME/.config}/chezmoi/chezmoi.toml"
+if [[ -f "$_chezmoi_toml" ]] && grep -q '^sourceDir' "$_chezmoi_toml"; then
+  ROOT="$(sed -n 's/^sourceDir[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' "$_chezmoi_toml" | head -1)"
+fi
+ROOT="${ROOT:-$(cd "$(dirname "$0")" && pwd)}"
+unset _chezmoi_toml
+FAIL=0
+WARN=0
+
+red()   { printf '\033[31m%s\033[0m\n' "$*"; }
+yellow(){ printf '\033[33m%s\033[0m\n' "$*"; }
+green() { printf '\033[32m%s\033[0m\n' "$*"; }
+
+fail() { red "FAIL: $*"; FAIL=1; }
+warn() { yellow "WARN: $*"; WARN=1; }
+ok()   { green "OK:   $*"; }
+
+# --- 1. Zsh history config invariants (source tree) ---
+options="$ROOT/dot_config/zsh/options.zsh"
+zshenv="$ROOT/dot_zshenv"
+
+if [[ -f "$options" ]]; then
+  if grep -q 'unsetopt SHARE_HISTORY' "$options"; then
+    fail "options.zsh disables SHARE_HISTORY — multi-session history will break"
+  fi
+  if grep -qE '^[[:space:]]*setopt INC_APPEND_HISTORY([[:space:]]|$)' "$options" \
+     && grep -q 'setopt INC_APPEND_HISTORY_TIME' "$options"; then
+    fail "options.zsh enables both INC_APPEND_HISTORY and INC_APPEND_HISTORY_TIME"
+  fi
+  if grep -q 'HIST_IGNORE_ALL_DUPS' "$options"; then
+    fail "options.zsh uses HIST_IGNORE_ALL_DUPS — aggressively deletes older history entries"
+  fi
+  grep -q 'setopt SHARE_HISTORY' "$options" && ok "SHARE_HISTORY enabled in options.zsh"
+else
+  fail "missing $options"
+fi
+
+if [[ -f "$zshenv" ]]; then
+  grep -q 'HISTFILE=' "$zshenv" || fail "HISTFILE must be set in dot_zshenv (before .zshrc)"
+  grep -q 'SAVEHIST=' "$zshenv" || fail "SAVEHIST must be set in dot_zshenv"
+  if grep -q 'SAVEHIST=0' "$zshenv"; then
+    fail "SAVEHIST=0 in dot_zshenv — history will not persist"
+  fi
+  ok "history vars in dot_zshenv"
+else
+  fail "missing $zshenv"
+fi
+env_zsh="$ROOT/dot_config/zsh/env.zsh"
+if [[ -f "$env_zsh" ]]; then
+  grep -q 'HISTSIZE=6969420' "$env_zsh" || warn "env.zsh should re-assert HISTSIZE after /etc/zshrc"
+  grep -q 'SAVEHIST=6969420' "$env_zsh" || warn "env.zsh should re-assert SAVEHIST after /etc/zshrc"
+fi
+
+# --- 2. Completion plugin conflicts ---
+plugins_txt="$ROOT/dot_zsh_plugins.txt"
+if [[ -f "$plugins_txt" ]]; then
+  if grep -qi 'zsh-autocomplete\|marlonrichert/zsh-autocomplete' "$plugins_txt"; then
+    fail "zsh-autocomplete conflicts with fzf-tab + carapace — remove from dot_zsh_plugins.txt"
+  fi
+  grep -qi 'fzf-tab\|Aloxaf/fzf-tab' "$plugins_txt" || warn "fzf-tab not listed in dot_zsh_plugins.txt"
+  ok "plugin manifest checked"
+else
+  fail "missing dot_zsh_plugins.txt — plugin list must be tracked"
+fi
+
+# --- 3. Secrets scan (tracked source files only) ---
+scan_secrets() {
+  local pattern='(sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}|-----BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY-----)'
+  local hits=0
+  while IFS= read -r -d '' f; do
+    case "$f" in
+      *.example.*|*secrets.example*|*README*|*AGENTS*|*CLAUDE*|*.md) continue ;;
+    esac
+    if grep -Eiq "$pattern" "$f" 2>/dev/null; then
+      fail "possible secret in ${f#"$ROOT"/}"
+      grep -Ein "$pattern" "$f" 2>/dev/null | head -3
+      hits=1
+    fi
+  done < <(find "$ROOT" -type f \
+    \( -path "$ROOT/dot_*" -o -path "$ROOT/dot_config/*" -o -path "$ROOT/dot_scripts/*" -o -path "$ROOT/run_*" \) \
+    ! -path '*/.git/*' \
+    ! -path '*/.beads/*' \
+    ! -path '*/.claude/plugins/cache/*' \
+    ! -path '*/.claude/plugins/marketplaces/*' \
+    ! -name '*.zwc' \
+    ! -name '*.png' \
+    ! -name '*.jpg' \
+    -print0)
+  [[ "$hits" -eq 0 ]] && ok "no obvious secrets in source tree"
+}
+scan_secrets
+
+# --- 4. Live vs source drift on critical shell files ---
+if [[ -f "$HOME/.config/zsh/options.zsh" && -f "$options" ]]; then
+  if grep -q 'unsetopt SHARE_HISTORY' "$HOME/.config/zsh/options.zsh" \
+     && grep -q 'setopt SHARE_HISTORY' "$options"; then
+    warn "live ~/.config/zsh/options.zsh still disables SHARE_HISTORY — apply will fix"
+  fi
+fi
+
+# --- 5. History file safety ---
+hist="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
+if [[ -f "$hist" ]]; then
+  lines=$(wc -l < "$hist" | tr -d ' ')
+  if [[ "$lines" -lt 10 ]]; then
+    warn "history file suspiciously small ($lines lines) — run merge-zsh-history before apply"
+  else
+    ok "history file present ($lines lines)"
+  fi
+fi
+
+# --- 6. Completion dependencies ---
+for bin in carapace fzf antidote; do
+  command -v "$bin" >/dev/null 2>&1 || warn "$bin not on PATH — completion stack degraded until installed"
+done
+command -v carapace >/dev/null 2>&1 && ok "carapace installed"
+
+echo
+if [[ "$FAIL" -ne 0 ]]; then
+  red "apply-guard: blocked ($FAIL failure(s), $WARN warning(s))"
+  exit 1
+fi
+if [[ "$WARN" -ne 0 ]]; then
+  yellow "apply-guard: passed with $WARN warning(s)"
+else
+  green "apply-guard: all checks passed"
+fi
+exit 0
