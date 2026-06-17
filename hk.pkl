@@ -43,15 +43,43 @@ local quality = new Mapping<String, Step> {
   }
 }
 
+local dotfiles = new Mapping<String, Step> {
+  /// mise/uv/npm/pip/pyenv/nvm/fnm/pipx hygiene on the live machine
+  ["audit_runtimes"] {
+    check = "audit-runtimes --hk"
+  }
+  /// mise health on the live machine
+  ["mise_doctor"] {
+    profiles = List("slow")
+    check = "command -v mise >/dev/null && mise doctor"
+  }
+  /// Chezmoi source matches deployed dotfiles
+  ["chezmoi_verify"] {
+    check = "command -v chezmoi >/dev/null && chezmoi verify"
+  }
+}
+
 hooks {
   ["secrets"] {
     steps = secrets
   }
   ["check"] {
-    steps = secrets + quality
+    steps = secrets + quality + dotfiles
   }
+  /// Staged-file guards only. Full gitleaks runs via apply-guard staging.
   ["pre-commit"] {
     stash = "git"
-    steps = secrets
+    steps = new Mapping<String, Step> {
+      ["detect_private_key"] = Builtins.detect_private_key
+      ["audit_runtimes"] = dotfiles["audit_runtimes"]
+    }
+  }
+  ["pre-push"] {
+    steps = new Mapping<String, Step> {
+      ["detect_private_key"] = Builtins.detect_private_key
+      ["audit_runtimes"] = dotfiles["audit_runtimes"]
+      ["chezmoi_verify"] = dotfiles["chezmoi_verify"]
+      ["mise_doctor"] = dotfiles["mise_doctor"]
+    }
   }
 }

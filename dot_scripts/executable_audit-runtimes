@@ -1,0 +1,199 @@
+#!/usr/bin/env bash
+# Audit language runtimes: catch bare npm/pip/pyenv/nvm/fnm/pipx drift vs mise+uv.
+# Usage: audit-runtimes [--hk] [--json]
+#   --hk   exit 1 when warnings or failures found (for hk / apply-guard)
+#   --json machine-readable summary
+set -euo pipefail
+
+HK_MODE=0
+JSON_MODE=0
+for arg in "$@"; do
+  case "$arg" in
+    --hk) HK_MODE=1 ;;
+    --json) JSON_MODE=1 ;;
+    -h|--help)
+      sed -n '2,6p' "$0"
+      exit 0
+      ;;
+  esac
+done
+
+FAIL=0
+WARN=0
+ISSUES=()
+
+log_fail() { ISSUES+=("FAIL:$1"); ((FAIL++)) || true; }
+log_warn() { ISSUES+=("WARN:$1"); ((WARN++)) || true; }
+
+mise_root="${MISE_DATA_DIR:-$HOME/.local/share/mise}"
+mise_installs="$mise_root/installs"
+
+under_mise() {
+  local path="$1"
+  [[ "$path" == "$mise_installs"/* ]]
+}
+
+path_of() {
+  command -v "$1" 2>/dev/null || true
+}
+
+# --- Node / npm ---
+if command -v node >/dev/null 2>&1; then
+  node_path="$(path_of node)"
+  if under_mise "$node_path"; then
+    : "ok node under mise"
+  else
+    log_fail "node is not mise-owned: $node_path"
+  fi
+else
+  log_warn "node not on PATH"
+fi
+
+if command -v npm >/dev/null 2>&1; then
+  npm_path="$(path_of npm)"
+  npm_prefix="$(npm config get prefix 2>/dev/null || true)"
+  if under_mise "$npm_path"; then
+    : "ok npm under mise"
+  else
+    log_fail "npm is not mise-owned: $npm_path"
+  fi
+  case "$npm_prefix" in
+    "$mise_installs"/*) ;;
+    /opt/homebrew/*|/usr/local/*|"$HOME/.npm"*|"$HOME/.npm-global"*)
+      log_warn "npm global prefix outside mise: $npm_prefix"
+      ;;
+  esac
+  if command -v npm >/dev/null 2>&1; then
+    global_count="$(npm ls -g --depth=0 2>/dev/null | rg -c '^[├└]' || true)"
+    [[ -n "$global_count" && "$global_count" -gt 0 ]] || global_count=0
+    if [[ "$global_count" -gt 0 ]]; then
+      log_warn "npm has $global_count global package(s) — audit with: npm ls -g --depth=0"
+    fi
+  fi
+else
+  log_warn "npm not on PATH"
+fi
+
+# --- Python / pip ---
+for py in python python3 pip pip3; do
+  command -v "$py" >/dev/null 2>&1 || continue
+  p="$(path_of "$py")"
+  if under_mise "$p"; then
+    continue
+  fi
+  case "$p" in
+    /usr/bin/*|/usr/local/bin/*) log_warn "$py is system-owned: $p" ;;
+    /opt/homebrew/*) log_warn "$py is Homebrew-owned (runtime?): $p" ;;
+    *) log_fail "$py is not mise-owned: $p" ;;
+  esac
+done
+
+if command -v pipx >/dev/null 2>&1; then
+  pipx_path="$(path_of pipx)"
+  if [[ "$pipx_path" == /opt/homebrew/* || "$pipx_path" == /usr/local/* ]]; then
+    log_warn "pipx still installed via Homebrew: $pipx_path (prefer: uv tool)"
+  fi
+  if pipx list 2>/dev/null | rg -q '.'; then
+    log_warn "pipx has installed apps — migrate to: uv tool install <pkg>"
+  fi
+fi
+
+if command -v uv >/dev/null 2>&1; then
+  uv_path="$(path_of uv)"
+  if under_mise "$uv_path" || [[ "$uv_path" == "$HOME/.local/bin/uv" ]]; then
+    : "ok uv"
+  else
+    log_warn "uv unexpected location: $uv_path"
+  fi
+else
+  log_warn "uv not on PATH"
+fi
+
+# --- Legacy runtime managers on PATH ---
+for legacy in pyenv nvm fnm rbenv asdf; do
+  command -v "$legacy" >/dev/null 2>&1 || continue
+  lp="$(path_of "$legacy")"
+  log_warn "legacy runtime manager on PATH: $legacy ($lp)"
+done
+
+# --- Legacy bootstrap directories ---
+for dir in \
+  "$HOME/.pyenv" \
+  "$HOME/.nvm" \
+  "$HOME/.rbenv" \
+  "$HOME/.asdf" \
+  "$HOME/.bun" \
+  "$HOME/.bak_old_bun" \
+  ; do
+  [[ -d "$dir" ]] && log_warn "legacy runtime directory still present: $dir"
+done
+
+# --- Homebrew runtime formulas (should be apps only) ---
+if command -v brew >/dev/null 2>&1; then
+  while IFS= read -r formula; do
+    [[ -z "$formula" ]] && continue
+    log_warn "Homebrew still owns runtime formula: $formula"
+  done < <(brew list --formula 2>/dev/null | rg -i '^(node(@[0-9]+)?|python(@[0-9]+)?|ruby(@[0-9]+)?|go(@[0-9]+)?|rust|rustc)$' || true)
+fi
+
+# --- Stale shims in ~/.local/bin ---
+if [[ -d "$HOME/.local/bin" ]]; then
+  while IFS= read -r shim; do
+    [[ -L "$shim" && ! -e "$shim" ]] && log_warn "broken shim: $shim"
+  done < <(find "$HOME/.local/bin" -maxdepth 1 -type l -print 2>/dev/null)
+  while IFS= read -r shim; do
+    target="$(readlink "$shim" 2>/dev/null || true)"
+    case "$target" in
+      *"/.nvm/"*|*"/.pyenv/"*|*"/.fnm/"*|*"/.bun/"*)
+        log_warn "shim points at legacy runtime: $shim -> $target"
+        ;;
+    esac
+  done < <(find "$HOME/.local/bin" -maxdepth 1 -type l -print 2>/dev/null)
+fi
+
+# --- mise health ---
+if command -v mise >/dev/null 2>&1; then
+  if ! mise doctor >/dev/null 2>&1; then
+    log_warn "mise doctor reported issues — run: mise doctor"
+  fi
+else
+  log_fail "mise not on PATH"
+fi
+
+# --- Shell init fragments still sourcing legacy managers ---
+for rc in "$HOME/.zshrc" "$HOME/.zprofile" "$HOME/.bashrc" "$HOME/.profile"; do
+  [[ -f "$rc" ]] || continue
+  if rg -q 'nvm|pyenv init|fnm env|rbenv init|asdf\.sh' "$rc" 2>/dev/null; then
+    log_warn "legacy runtime init still referenced in $rc"
+  fi
+done
+
+# --- Output ---
+if [[ "$JSON_MODE" -eq 1 ]]; then
+  printf '{"fail":%s,"warn":%s,"issues":[' "$FAIL" "$WARN"
+  first=1
+  for issue in "${ISSUES[@]}"; do
+    [[ "$first" -eq 1 ]] && first=0 || printf ','
+    printf '"%s"' "${issue//\"/\\\"}"
+  done
+  printf ']}\n'
+elif [[ "$HK_MODE" -eq 1 ]]; then
+  for issue in "${ISSUES[@]}"; do
+    case "$issue" in
+      FAIL:*) printf 'FAIL: %s\n' "${issue#FAIL:}" >&2 ;;
+      WARN:*) printf 'WARN: %s\n' "${issue#WARN:}" >&2 ;;
+    esac
+  done
+  [[ "$FAIL" -eq 0 && "$WARN" -eq 0 ]] && exit 0
+  [[ "$FAIL" -gt 0 ]] && exit 1
+  exit 0
+else
+  echo "Runtime audit: $FAIL failure(s), $WARN warning(s)"
+  for issue in "${ISSUES[@]}"; do
+    case "$issue" in
+      FAIL:*) printf '  ✗ %s\n' "${issue#FAIL:}" ;;
+      WARN:*) printf '  ! %s\n' "${issue#WARN:}" ;;
+    esac
+  done
+  [[ "$FAIL" -eq 0 ]]
+fi

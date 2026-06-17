@@ -137,11 +137,29 @@ if [[ -f "$hist" ]]; then
   fi
 fi
 
-# --- 6. Completion dependencies ---
-for bin in carapace fzf antidote; do
-  command -v "$bin" >/dev/null 2>&1 || warn "$bin not on PATH — completion stack degraded until installed"
+# --- 6. Runtime hygiene (bare npm/pip/pyenv/nvm/fnm/pipx) ---
+audit_script="$ROOT/dot_scripts/executable_audit-runtimes"
+if [[ -x "$audit_script" ]]; then
+  if "$audit_script" --hk; then
+    ok "runtime audit passed (mise/uv ownership)"
+  else
+    rc=$?
+    if [[ "$rc" -eq 1 ]]; then
+      warn "runtime audit found drift — run: audit-runtimes"
+    else
+      warn "runtime audit errored (rc=$rc)"
+    fi
+  fi
+else
+  warn "missing $audit_script"
+fi
+
+# --- 7. Completion dependencies ---
+for bin in carapace fzf antidote hk; do
+  command -v "$bin" >/dev/null 2>&1 || warn "$bin not on PATH — degraded until installed"
 done
 command -v carapace >/dev/null 2>&1 && ok "carapace installed"
+command -v hk >/dev/null 2>&1 && ok "hk installed"
 
 echo
 if [[ "$FAIL" -ne 0 ]]; then
