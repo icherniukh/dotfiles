@@ -37,9 +37,31 @@ path_of() {
   command -v "$1" 2>/dev/null || true
 }
 
+# --- PATH precedence (mise should win over ~/bin, brew, etc.) ---
+if command -v mise >/dev/null 2>&1; then
+  first_mise=""
+  first_conflict=""
+  while IFS= read -r p; do
+    [[ -z "$p" ]] && continue
+    case "$p" in
+      "$mise_installs"/*|"$mise_root/shims"/*)
+        [[ -z "$first_mise" ]] && first_mise="$p"
+        ;;
+      "$HOME/bin"/*|/opt/homebrew/*|/usr/local/*|"$HOME/.nvm"/*|"$HOME/.pyenv"/*)
+        [[ -z "$first_conflict" ]] && first_conflict="$p"
+        ;;
+    esac
+  done < <(which -a node python3 2>/dev/null | sort -u)
+  if [[ -n "$first_conflict" && -n "$first_mise" ]]; then
+    log_warn "PATH precedence: $first_conflict shadows mise ($first_mise) — move mise activate later in shell rc"
+  fi
+fi
+
 # --- Node / npm ---
 if command -v node >/dev/null 2>&1; then
   node_path="$(path_of node)"
+  node_count="$(which -a node 2>/dev/null | wc -l | tr -d ' ')"
+  [[ "$node_count" -gt 1 ]] && log_warn "multiple node binaries on PATH ($node_count) — run: which -a node"
   if under_mise "$node_path"; then
     : "ok node under mise"
   else
@@ -73,6 +95,18 @@ if command -v npm >/dev/null 2>&1; then
 else
   log_warn "npm not on PATH"
 fi
+
+for pkgmgr in pnpm yarn bun; do
+  command -v "$pkgmgr" >/dev/null 2>&1 || continue
+  pm_path="$(path_of "$pkgmgr")"
+  if under_mise "$pm_path"; then
+    continue
+  fi
+  case "$pm_path" in
+    /opt/homebrew/*|/usr/local/*) log_warn "$pkgmgr is Homebrew-owned: $pm_path" ;;
+    *) log_fail "$pkgmgr is not mise-owned: $pm_path" ;;
+  esac
+done
 
 # --- Python / pip ---
 for py in python python3 pip pip3; do
@@ -151,10 +185,29 @@ if [[ -d "$HOME/.local/bin" ]]; then
   done < <(find "$HOME/.local/bin" -maxdepth 1 -type l -print 2>/dev/null)
 fi
 
+# --- Rust / Go globals outside mise ---
+if [[ -d "${CARGO_HOME:-$HOME/.cargo}/bin" ]]; then
+  while IFS= read -r bin; do
+    [[ -z "$bin" ]] && continue
+    bp="$(path_of "$bin" 2>/dev/null || true)"
+    [[ -z "$bp" ]] && continue
+    under_mise "$bp" && continue
+    [[ "$bp" == "${CARGO_HOME:-$HOME/.cargo}/bin/"* ]] && log_warn "cargo-installed global: $bin ($bp)"
+  done < <(ls "${CARGO_HOME:-$HOME/.cargo}/bin" 2>/dev/null)
+fi
+
+if [[ -d "${GOPATH:-$HOME/go}/bin" ]]; then
+  go_count="$(find "${GOPATH:-$HOME/go}/bin" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' ')"
+  [[ "$go_count" -gt 0 ]] && log_warn "go install globals in ${GOPATH:-$HOME/go}/bin ($go_count) — prefer mise/go backend"
+fi
+
 # --- mise health ---
 if command -v mise >/dev/null 2>&1; then
   if ! mise doctor >/dev/null 2>&1; then
     log_warn "mise doctor reported issues — run: mise doctor"
+  fi
+  if mise ls 2>/dev/null | rg -q 'missing'; then
+    log_warn "mise has missing tools — run: mise install"
   fi
 else
   log_fail "mise not on PATH"
