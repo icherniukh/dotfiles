@@ -19,7 +19,7 @@ fi
 
 # Starship's zsh init defines zle widgets, so only load it when a real TTY is attached.
 if [[ -t 0 && -t 1 ]]; then
-  if [[ -n "${MOSH_CLIENT:-}" ]]; then
+  if [[ -n "${MOSHI_CLIENT:-}" ]]; then
     export STARSHIP_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/starship-mosh.toml"
   fi
   eval "$(starship init zsh)"
