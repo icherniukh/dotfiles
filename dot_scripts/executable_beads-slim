@@ -7,6 +7,7 @@ fi
 
 python3 - "$@" <<'PY'
 from pathlib import Path
+import json
 import sys
 
 prime = """# Beads
@@ -17,17 +18,6 @@ prime = """# Beads
 - Use `bd remember` only for evergreen facts not already captured in issue descriptions.
 - Update issue state before ending work.
 """
-
-block = """<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal -->
-## Beads Issue Tracker
-
-This project uses **bd (beads)** for issue tracking.
-
-- Run `bd prime` for the current workflow context.
-- Core commands: `bd ready`, `bd show <id>`, `bd update <id> --claim`, `bd close <id>`.
-- Use `bd` for persistent task tracking instead of markdown TODO lists.
-- Use `bd remember` only for evergreen facts not already captured well in issue descriptions.
-<!-- END BEADS INTEGRATION -->"""
 
 start = '<!-- BEGIN BEADS INTEGRATION'
 end = '<!-- END BEADS INTEGRATION -->'
@@ -53,6 +43,9 @@ for raw in sys.argv[1:]:
                 f.write('.beads/PRIME.md\n')
             print(f'exclude {exclude}')
 
+    # .beads/PRIME.md above is what bd prime actually shows each session now,
+    # so a static block repeating the same thing in the doc files is dead
+    # weight -- strip it instead of shrinking it.
     for rel in ('AGENTS.md', 'CLAUDE.md', 'GEMINI.md', 'docs/AGENTS.md'):
         path = repo / rel
         if not path.exists():
@@ -61,6 +54,37 @@ for raw in sys.argv[1:]:
         if start in txt and end in txt:
             a = txt.index(start)
             b = txt.index(end) + len(end)
-            path.write_text(txt[:a] + block + txt[b:])
-            print(f'patch {path}')
+            tail = txt[b:]
+            if tail.startswith('\n\n'):
+                tail = tail[1:]
+            new_txt = txt[:a].rstrip('\n') + '\n' + tail.lstrip('\n')
+            path.write_text(new_txt)
+            print(f'strip {path}')
+
+    # Codex native hooks refresh bd context on SessionStart, PreCompact,
+    # PostCompact, and UserPromptSubmit. The last one refires on every
+    # single prompt, not just at boundaries where context can actually go
+    # stale -- drop it. The compact hooks only need memories, not the full
+    # dump -- add --memories-only.
+    codex_hooks = repo / '.codex' / 'hooks.json'
+    if codex_hooks.exists():
+        data = json.loads(codex_hooks.read_text())
+        hooks = data.get('hooks', {})
+        changed = False
+
+        for event in ('PreCompact', 'PostCompact'):
+            for entry in hooks.get(event, []):
+                for h in entry.get('hooks', []):
+                    cmd = h.get('command', '')
+                    if cmd.startswith('bd codex-hook') and '--memories-only' not in cmd:
+                        h['command'] = cmd + ' --memories-only'
+                        changed = True
+
+        if 'UserPromptSubmit' in hooks:
+            del hooks['UserPromptSubmit']
+            changed = True
+
+        if changed:
+            codex_hooks.write_text(json.dumps(data, indent=2) + '\n')
+            print(f'tune {codex_hooks}')
 PY
