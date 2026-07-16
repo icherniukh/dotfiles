@@ -233,3 +233,12 @@ brew_installed() {
     fi
   done
 }
+
+# Lazy-load antidote properly
+antidote() {
+  unfunction antidote
+  local _antidote_path="${BREW_PREFIX:-$(brew --prefix)}/opt/antidote/share/antidote/antidote.zsh"
+  [[ -f "$_antidote_path" ]] || _antidote_path="${HOME}/.antidote/antidote.zsh"
+  source "$_antidote_path"
+  antidote "$@"
+}

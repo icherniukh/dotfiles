@@ -127,7 +127,7 @@ alias lzdock='lazydocker'
 alias csvcat='tennis'
 
 # macOS-only aliases
-if [[ "$OSTYPE" == darwin* ]]; then
+if [[ "$(uname)" == "Darwin" ]]; then
   # File managers
   alias nimble="open -a 'Nimble Commander'"
   alias bloom="open -a Bloom"
@@ -151,3 +151,10 @@ alias xif='exiftool -a -u -g -ee -api largefilechunks=1'
 
 # list usbs via diskutil
 alias usblist='diskutil list | grep -i external'
+
+# typo
+alias gay='agy'
+
+
+# bq alias for brewq
+alias bq='brewq'

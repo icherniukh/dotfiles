@@ -1,9 +1,9 @@
 amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
 import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtins.pkl"
 
-/// Chezmoi dotfiles checks. Secret scans run inside a staging directory
-/// (see dot_scripts/executable_hk-chezmoi-staging) so gitleaks does not
-/// walk the whole repo (.claude, plugin caches, etc.).
+/// Dotfiles-repo hk config (NOT deployed to ~/hk.pkl — see .chezmoiignore).
+/// Global hooks for other repos: dot_config/hk/config.pkl → ~/.config/hk/config.pkl
+/// Secret scans: use `hk-dotfiles-secrets` (staging dir), never raw gitleaks here.
 
 local gitleaks_scoped = new Config.Step {
   glob = "**/*"
