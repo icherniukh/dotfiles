@@ -5,3 +5,9 @@ zdharma-continuum/history-search-multi-word
 akash329d/zsh-alias-finder
 gretzky/auto-color-ls
 mfaerevaag/wd
+
+# Core plugins migrated from Homebrew paths for cross-platform support
+zsh-users/zsh-autosuggestions
+zsh-users/zsh-syntax-highlighting
+zsh-users/zsh-history-substring-search
+wfxr/forgit

@@ -44,13 +44,7 @@ unset _zsh_plugins_src
 if [[ -t 0 && -t 1 ]]; then
   [[ -f $zsh_plugins ]] && source $zsh_plugins
 
-  # Plugin configs (Homebrew-installed using BREW_PREFIX for portability)
-  [[ -f "${BREW_PREFIX}/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && \
-    source "${BREW_PREFIX}/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
-  [[ -f "${BREW_PREFIX}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && \
-    source "${BREW_PREFIX}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-  [[ -f "${BREW_PREFIX}/share/zsh-history-substring-search/zsh-history-substring-search.zsh" ]] && \
-    source "${BREW_PREFIX}/share/zsh-history-substring-search/zsh-history-substring-search.zsh"
+
 
   ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#666666"
 
@@ -71,8 +65,7 @@ if [[ -t 0 && -t 1 ]]; then
     [[ -n ${FZF_PATH-} && -f "${FZF_PATH}/fzf.zsh" ]] && source "${FZF_PATH}/fzf.zsh"
   fi
 
-  [[ -f ${BREW_PREFIX}/share/forgit/forgit.plugin.zsh ]] && \
-    source ${BREW_PREFIX}/share/forgit/forgit.plugin.zsh
+
 
   [[ -f "${ZSH_CONFIG_DIR}/completion.zsh" ]] && source "${ZSH_CONFIG_DIR}/completion.zsh"
 fi
