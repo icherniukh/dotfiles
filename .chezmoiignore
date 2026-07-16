@@ -3,6 +3,8 @@ AGENTS.md
 CLAUDE.md
 .beads/
 .gitignore
+# Repo-only hk config — global hooks live in dot_config/hk/config.pkl (~/.config/hk/)
+hk.pkl
 
 {{ if ne .chezmoi.os "darwin" }}
 dot_config/ghostty/

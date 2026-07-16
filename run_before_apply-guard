@@ -70,51 +70,40 @@ fi
 
 # --- 3. hk checks (gitleaks + detect_private_key + quality) ---
 run_hk_checks() {
-  local hk_pkl staging staging_script
+  local secrets_script="$ROOT/dot_scripts/executable_hk-dotfiles-secrets"
 
-  hk_pkl="$ROOT/hk.pkl"
-  staging_script="$ROOT/dot_scripts/executable_hk-chezmoi-staging"
-
-  if [[ ! -f "$hk_pkl" ]]; then
+  if [[ ! -f "$ROOT/hk.pkl" ]]; then
     fail "missing hk.pkl — add hk config for secret scanning"
     return
   fi
 
   if ! command -v hk >/dev/null 2>&1; then
-    warn "hk not installed — skipping hk checks (brew install hk)"
+    warn "hk not installed — skipping hk checks"
     return
   fi
 
-  if [[ ! -x "$staging_script" ]]; then
-    fail "missing executable $staging_script"
+  if [[ ! -x "$secrets_script" ]]; then
+    fail "missing executable $secrets_script"
     return
   fi
 
-  if ! staging="$("$staging_script" "$ROOT")"; then
-    fail "hk staging failed"
-    return
-  fi
-
-  if (cd "$staging" && hk check --step gitleaks --step detect_private_key --all -q); then
+  if HK_DOTFILES_ROOT="$ROOT" "$secrets_script"; then
     ok "hk secret scan passed (gitleaks + detect_private_key)"
   else
-    fail "hk secret scan failed — run: staging=\$(hk-chezmoi-staging \"$ROOT\") && cd \"\$staging\" && hk check --step gitleaks --step detect_private_key --all"
+    fail "hk secret scan failed — run: hk-dotfiles-secrets"
     yellow "       full log: ${XDG_STATE_HOME:-$HOME/.local/state}/hk/output.log"
-    rm -rf "$staging"
     return
   fi
 
-  if (cd "$staging" && hk check \
+  if HK_DOTFILES_ROOT="$ROOT" "$secrets_script" check \
       --step check_executables_have_shebangs \
       --step check_merge_conflict \
       --step check_symlinks \
-      --all -q); then
+      --all -q; then
     ok "hk quality checks passed"
   else
-    warn "hk quality checks failed — run: hk check --all in hk-chezmoi-staging dir"
+    warn "hk quality checks failed — run: hk-dotfiles-secrets --all"
   fi
-
-  rm -rf "$staging"
 }
 run_hk_checks
 

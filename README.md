@@ -30,6 +30,14 @@ chezmoi cd          # open source directory
 chezmoi add <file>  # track a new file
 ```
 
+## Development
+
+- Run `hk-dotfiles-secrets` inside this repository to scan for leaked secrets before pushing. It securely tests changes using a staging directory to prevent false positives from local AI caches.
+
+## Runtime migration
+
+Use `docs/runtime-transition.html` as the local dashboard while moving runtimes and CLI ownership to mise/uv.
+
 ## Notes
 
 - `dot_` → `.` (e.g. `dot_zshrc` → `~/.zshrc`)
