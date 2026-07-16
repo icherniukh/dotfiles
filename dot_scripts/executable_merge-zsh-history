@@ -6,10 +6,17 @@ STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/zsh"
 OUT="${1:-$STATE_DIR/history}"
 BACKUP_DIR="$STATE_DIR/backups-$(date +%Y%m%d-%H%M%S)"
 
+# Oldest/auxiliary first; largest superset before current (setdefault keeps first seen).
 sources=(
-  "$STATE_DIR/history"
-  "$STATE_DIR/.!33378!history"
   "$HOME/proj/cli-configs/2025.personal.configs/home_zsh_history"
+  "$HOME/repos/cli-configs/archive/2025-backups/home_zsh_history"
+  "$STATE_DIR/.!33378!history"
+  "$STATE_DIR/backups-20260617-025628/history.33378-temp"
+  "$STATE_DIR/history.zsh_history-fork-20260617"
+  "$STATE_DIR/backups-20260617-035924/history.pre-merge"
+  "$STATE_DIR/backups-20260617-035701/history.pre-merge"
+  "$STATE_DIR/backups-20260617-025628/history"
+  "$STATE_DIR/history"
   "$HOME/.zsh_history"
 )
 

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Full zsh history merge including fork + pre-merge backup sources.
+set -euo pipefail
+exec "$(dirname "$0")/executable_merge-zsh-history" "$@"
