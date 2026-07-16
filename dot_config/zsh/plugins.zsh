@@ -2,7 +2,7 @@
 
 # Completions: compinit first, then antidote/fzf-tab, then carapace specs.
 if type brew &>/dev/null; then
-  FPATH="${BREW_PREFIX}/share/zsh-completions:$FPATH"
+  FPATH="${BREW_PREFIX}/share/zsh/site-functions:${BREW_PREFIX}/share/zsh-completions:$FPATH"
 fi
 fpath=("$ZSH_CONFIG_DIR/site-functions" "$HOME/.local/share/zsh/site-functions" $fpath)
 zmodload zsh/complist

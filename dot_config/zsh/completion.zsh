@@ -8,29 +8,27 @@ if command -v carapace >/dev/null 2>&1; then
   source <(carapace _carapace)
 fi
 
-# fzf-tab — fzf popup for completion selection.
-if (( ${+widgets[fzf-tab-complete]} )); then
-  _zsh_fzf_tab_complete() {
-    (( ${+widgets[autosuggest-clear]} )) && zle autosuggest-clear
-    POSTDISPLAY=
-    zle fzf-tab-complete
-  }
-  zle -N _zsh_fzf_tab_complete
-  bindkey '^I' _zsh_fzf_tab_complete
-  bindkey "$terminfo[kcbt]" fzf-tab-complete 2>/dev/null
+# Canonical tab completion
+zstyle ':completion:*' menu select
+setopt ALWAYS_LAST_PROMPT AUTO_MENU COMPLETE_IN_WORD
+unsetopt LIST_BEEP
 
-  zstyle ':completion:*' menu no
-  zstyle ':completion:*:descriptions' format '[%d]'
-  zstyle ':fzf-tab:*' continuous-trigger '/'
-  zstyle ':fzf-tab:*' fzf-flags \
-    --height=40% --layout=reverse --border=rounded \
-    --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
-    --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
-    --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8
-  zstyle ':fzf-tab:complete:*:*' fzf-preview \
-    'if [ -d $realpath ]; then eza -1 --color=always $realpath 2>/dev/null || ls -1 $realpath; else bat --style=numbers --color=always --line-range :200 $realpath 2>/dev/null; fi'
-  zstyle ':fzf-tab:complete:brew-(install|uninstall|search|info):*-argument-rest' fzf-preview 'brew info $word 2>/dev/null | head -40'
-fi
+_zsh_tab_complete() {
+  if [[ -n ${POSTDISPLAY:-} && ${+widgets[autosuggest-accept]} -eq 1 ]]; then
+    zle autosuggest-accept
+    return
+  fi
+  zle menu-complete
+}
+zle -N _zsh_tab_complete
+bindkey '^I' _zsh_tab_complete
+bindkey "$terminfo[kcbt]" reverse-menu-complete 2>/dev/null
+bindkey -M menuselect '^[' send-break
+bindkey -M menuselect '^M' .accept-line
+bindkey -M menuselect '^J' .accept-line
+
+# Classic history search
+bindkey '^R' history-incremental-search-backward
 
 # History substring search (up/down with prefix).
 if (( ${+widgets[history-substring-search-up]} )); then
