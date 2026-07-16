@@ -9,4 +9,9 @@ hk.pkl
 {{ if ne .chezmoi.os "darwin" }}
 dot_config/ghostty/
 dot_hammerspoon/
+**/*.darwin.zsh
+{{ end }}
+
+{{ if ne .chezmoi.os "linux" }}
+**/*.linux.zsh
 {{ end }}

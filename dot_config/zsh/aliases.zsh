@@ -126,19 +126,9 @@ alias lzdock='lazydocker'
 # stylish csv table printing
 alias csvcat='tennis'
 
-# macOS-only aliases
-if [[ "$(uname)" == "Darwin" ]]; then
-  # File managers
-  alias nimble="open -a 'Nimble Commander'"
-  alias bloom="open -a Bloom"
-  alias marta="open -a Marta"
-  # Opens GUI Finder in current folder
-  alias finder='open -R .'
-  # List all Ghostty theme names
-  alias ghthemes='lsd -1N --icon never /Applications/Ghostty.app/Contents/Resources/ghostty/themes/'
-  # Logic Pro samples
-  alias gotosamples='cd "/Library/Application Support/Logic/Ultrabeat Samples/Epic Electro/"'
-fi
+# OS-specific aliases
+local os_aliases="${ZSH_CONFIG_DIR}/aliases.$(uname | tr '[:upper:]' '[:lower:]').zsh"
+[[ -f "$os_aliases" ]] && source "$os_aliases"
 
 # Fuzzy-select Github PR to checkout
 alias gh-prcheckout='gh pr list | fzf | awk '\''{print }'\'' | xargs gh pr checkout'

@@ -8,8 +8,9 @@ export PATH="$HOME/.local/bin:$HOME/.scripts:$PATH"
 # Package manager core bins
 [[ -n "${BREW_PREFIX:-}" ]] && export PATH="${BREW_PREFIX}/bin:${BREW_PREFIX}/sbin:$PATH"
 
-# MacPorts (macOS only)
-[[ "$OSTYPE" == darwin* && -d /opt/local/bin ]] && export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
+# OS-specific paths
+local os_paths="${ZSH_CONFIG_DIR}/paths.$(uname | tr '[:upper:]' '[:lower:]').zsh"
+[[ -f "$os_paths" ]] && source "$os_paths"
 
 # mise activation
 if command -v mise >/dev/null 2>&1; then
