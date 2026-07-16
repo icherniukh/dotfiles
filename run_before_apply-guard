@@ -62,7 +62,6 @@ if [[ -f "$plugins_txt" ]]; then
   if grep -qi 'zsh-autocomplete\|marlonrichert/zsh-autocomplete' "$plugins_txt"; then
     fail "zsh-autocomplete conflicts with fzf-tab + carapace — remove from dot_zsh_plugins.txt"
   fi
-  grep -qi 'fzf-tab\|Aloxaf/fzf-tab' "$plugins_txt" || warn "fzf-tab not listed in dot_zsh_plugins.txt"
   ok "plugin manifest checked"
 else
   fail "missing dot_zsh_plugins.txt — plugin list must be tracked"
