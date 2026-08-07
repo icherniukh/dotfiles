@@ -1,6 +1,6 @@
-# Plugin and completion setup (antidote + carapace + fzf-tab + Homebrew extras)
+# Plugin and completion setup (antidote + carapace + Homebrew extras)
 
-# Completions: compinit first, then antidote/fzf-tab, then carapace specs.
+# Completions: compinit first, then antidote plugins, then carapace specs.
 if type brew &>/dev/null; then
   FPATH="${BREW_PREFIX}/share/zsh/site-functions:${BREW_PREFIX}/share/zsh-completions:$FPATH"
 fi
@@ -14,13 +14,6 @@ else
   compinit -d "$ZSH_COMPDUMP"
 fi
 unset ZSH_COMPDUMP
-
-zstyle ':completion:*' completer _expand _complete _ignored
-zstyle ':completion:*:descriptions' format '%F{yellow}%d%f'
-zstyle ':completion:*' group-name ''
-zstyle ':completion:*' squeeze-slashes true
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}' 'r:|[._-]=* r:|=*'
-zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
 # Generate a static plugin bundle from `.zsh_plugins.txt` instead of resolving plugins on every shell start.
 _zsh_plugins_src="${ZDOTDIR:-$HOME}/.zsh_plugins.txt"
@@ -40,8 +33,8 @@ if [[ ! -f $zsh_plugins || "$_zsh_plugins_src" -nt $zsh_plugins ]]; then
   unset _antidote_path
 fi
 unset _zsh_plugins_src
-# Only load widget-heavy plugins when zle has a real terminal to attach to.
-if [[ -t 0 && -t 1 ]]; then
+# Only load widget-heavy plugins and completion in interactive shells.
+if [[ -o interactive || -t 0 ]]; then
   [[ -f $zsh_plugins ]] && source $zsh_plugins
 
 

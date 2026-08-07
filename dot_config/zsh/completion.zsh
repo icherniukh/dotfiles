@@ -1,36 +1,37 @@
-# Completion stack: carapace specs + fzf-tab UI.
-# Requires: carapace (brew), fzf-tab (antidote), fzf.
+# Classic Zsh Tab Completion + Carapace Specs
 
-# Carapace — universal command/flag completion specs.
+# 1. Carapace — universal command/flag completion engine
 if command -v carapace >/dev/null 2>&1; then
   export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense'
-  zstyle ':completion:*' format $'\e[2;37m%d\e[m'
   source <(carapace _carapace)
+
+  # Restore native zsh git completion (carapace git completion has issues with `git add`)
+  compdef _git git
 fi
 
-# Canonical tab completion
+# 2. Classic Zsh Completion Options & Menu Select Grid
 zstyle ':completion:*' menu select
 setopt ALWAYS_LAST_PROMPT AUTO_MENU COMPLETE_IN_WORD
 unsetopt LIST_BEEP
 
-_zsh_tab_complete() {
-  if [[ -n ${POSTDISPLAY:-} && ${+widgets[autosuggest-accept]} -eq 1 ]]; then
-    zle autosuggest-accept
-    return
-  fi
-  zle menu-complete
-}
-zle -N _zsh_tab_complete
-bindkey '^I' _zsh_tab_complete
+# Completion styles & matching rules
+zstyle ':completion:*' completer _expand _complete _ignored
+zstyle ':completion:*:descriptions' format '%F{yellow}%B── %d ──%b%f'
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' squeeze-slashes true
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}' 'r:|[._-]=* r:|=*'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+
+# Navigation inside menu select
 bindkey "$terminfo[kcbt]" reverse-menu-complete 2>/dev/null
 bindkey -M menuselect '^[' send-break
 bindkey -M menuselect '^M' .accept-line
 bindkey -M menuselect '^J' .accept-line
 
-# Classic history search
+# Classic history search fallback
 bindkey '^R' history-incremental-search-backward
 
-# History substring search (up/down with prefix).
+# History substring search (up/down arrow & ctrl-p/ctrl-n)
 if (( ${+widgets[history-substring-search-up]} )); then
   bindkey '^[[A' history-substring-search-up
   bindkey '^[[B' history-substring-search-down

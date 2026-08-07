@@ -60,7 +60,10 @@ fi
 plugins_txt="$ROOT/dot_zsh_plugins.txt"
 if [[ -f "$plugins_txt" ]]; then
   if grep -qi 'zsh-autocomplete\|marlonrichert/zsh-autocomplete' "$plugins_txt"; then
-    fail "zsh-autocomplete conflicts with fzf-tab + carapace — remove from dot_zsh_plugins.txt"
+    fail "zsh-autocomplete conflicts with classic completion + carapace — remove from dot_zsh_plugins.txt"
+  fi
+  if grep -qi 'Aloxaf/fzf-tab' "$plugins_txt"; then
+    fail "Aloxaf/fzf-tab present in dot_zsh_plugins.txt — remove to maintain classic completion + carapace"
   fi
   ok "plugin manifest checked"
 else

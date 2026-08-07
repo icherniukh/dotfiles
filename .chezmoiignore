@@ -1,6 +1,8 @@
 README.md
 AGENTS.md
 CLAUDE.md
+DECISIONS.md
+docs/
 .beads/
 .gitignore
 # Repo-only hk config — global hooks live in dot_config/hk/config.pkl (~/.config/hk/)
