@@ -1,6 +1,6 @@
 # Machine-local tweaks go here. Copy to local.zsh to activate.
 # Use this for host-only shell integrations or generated completions you do not want in git.
-# Tab completion (carapace + fzf-tab) lives in completion.zsh — do not duplicate here.
+# Tab completion (carapace + classic zsh) lives in completion.zsh — do not duplicate here.
 
 # Ghostty shell integration
 if [[ -n "$GHOSTTY_RESOURCES_DIR" ]]; then

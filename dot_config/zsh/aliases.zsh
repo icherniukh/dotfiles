@@ -13,7 +13,7 @@ alias hxx='_hxx'
 
 alias goconfig='pushd ~/.config'
 
-alias srcshell='usource ~/.zshrc'
+alias srcshell='source ~/.zshrc'
 alias refreshenv='source ~/.zshrc'
 alias okay='source ~/.zshrc'
 

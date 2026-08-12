@@ -1,21 +1,14 @@
 # Plugin and completion setup (antidote + carapace + Homebrew extras)
 
-# Completions: compinit first, then antidote plugins, then carapace specs.
+# 1. Build fpath with Homebrew completions (before plugins, before compinit)
 if type brew &>/dev/null; then
   FPATH="${BREW_PREFIX}/share/zsh/site-functions:${BREW_PREFIX}/share/zsh-completions:$FPATH"
 fi
 fpath=("$ZSH_CONFIG_DIR/site-functions" "$HOME/.local/share/zsh/site-functions" $fpath)
+typeset -U fpath  # deduplicate — brew shellenv + login shell can double-add paths
 zmodload zsh/complist
-autoload -Uz compinit
-ZSH_COMPDUMP="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump-${ZSH_VERSION}"
-if [[ -s "$ZSH_COMPDUMP" && (! -s "${ZSH_COMPDUMP}.zwc" || "$ZSH_COMPDUMP" -nt "${ZSH_COMPDUMP}.zwc") ]]; then
-  compinit -C -d "$ZSH_COMPDUMP"
-else
-  compinit -d "$ZSH_COMPDUMP"
-fi
-unset ZSH_COMPDUMP
 
-# Generate a static plugin bundle from `.zsh_plugins.txt` instead of resolving plugins on every shell start.
+# 2. Generate a static plugin bundle from `.zsh_plugins.txt` instead of resolving plugins on every shell start.
 _zsh_plugins_src="${ZDOTDIR:-$HOME}/.zsh_plugins.txt"
 zsh_plugins="${ZDOTDIR:-$HOME}/.zsh_plugins.zsh"
 if [[ ! -f $zsh_plugins || "$_zsh_plugins_src" -nt $zsh_plugins ]]; then
@@ -33,11 +26,24 @@ if [[ ! -f $zsh_plugins || "$_zsh_plugins_src" -nt $zsh_plugins ]]; then
   unset _antidote_path
 fi
 unset _zsh_plugins_src
+
 # Only load widget-heavy plugins and completion in interactive shells.
 if [[ -o interactive || -t 0 ]]; then
+  # 3. Load plugins first — some (forgit, wd) add completions to fpath
   [[ -f $zsh_plugins ]] && source $zsh_plugins
 
-
+  # 4. Run compinit AFTER plugins so all fpath additions are visible.
+  #    Use -C (skip security check, load from dump) only when the compiled
+  #    dump (.zwc) exists and is newer than the dump itself — meaning it's fresh.
+  #    Otherwise run a full compinit to rebuild.
+  autoload -Uz compinit
+  ZSH_COMPDUMP="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump-${ZSH_VERSION}"
+  if [[ -s "${ZSH_COMPDUMP}.zwc" && "${ZSH_COMPDUMP}.zwc" -nt "$ZSH_COMPDUMP" ]]; then
+    compinit -C -d "$ZSH_COMPDUMP"
+  else
+    compinit -d "$ZSH_COMPDUMP"
+  fi
+  unset ZSH_COMPDUMP
 
   ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#666666"
 

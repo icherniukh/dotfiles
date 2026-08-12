@@ -108,6 +108,9 @@ export PATH="$HOME/.kimi-code/bin:$PATH"
 # agentify (aglog, mcp-attach) — cross-machine Claude/Codex tooling
 export PATH="$HOME/proj/agentify/bin:$PATH"
 
+# devview (dv, dvn, dvh) — curated symlink view of ~/proj
+[[ -f "$HOME/.config/devview/init.sh" ]] && source "$HOME/.config/devview/init.sh"
+
 if [[ "$ZPROF" = true ]]; then
   echo "  ## Finished ZPROF"
   zprof

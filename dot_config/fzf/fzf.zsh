@@ -1,4 +1,4 @@
-# Modern dynamic loading (disables native fzf tab completion so fzf-tab can take over)
+# fzf shell integration — key bindings only (completion disabled to avoid ^I conflicts with carapace)
 source <(fzf --zsh | sed -n '1,/### end: key-bindings.zsh ###/p')
 
 # Use `fd` instead of the default `find` to respect .gitignore and skip .git/
