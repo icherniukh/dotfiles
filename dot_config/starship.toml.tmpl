@@ -1,0 +1,70 @@
+{{- if eq .chezmoi.os "darwin" -}}
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Inserts a blank line between shell prompts
+add_newline = true
+
+# Replace the '❯' symbol in the prompt with '➜'
+[character] # The name of the module we are configuring is 'character'
+success_symbol = '[➜](bold green)' # The 'success_symbol' segment is being set to '➜' with the color 'bold green'
+
+# Disable the package module, hiding it from the prompt completely
+[package]
+disabled = true
+{{- else -}}
+"$schema" = 'https://starship.rs/config-schema.json'
+
+add_newline = false
+
+format = """
+$username\
+$hostname\
+$cmd_duration\
+$line_break\
+$directory\
+$git_branch\
+$git_status\
+$line_break\
+$character
+"""
+
+[username]
+show_always = true
+style_user = "bold #8be9fd"
+style_root = "bold #ff5555"
+format = "[$user]($style)"
+
+[hostname]
+ssh_only = false
+style = "bold #101418 on #ffb86c"
+format = " [@$hostname]($style)"
+
+[directory]
+style = "bold #f1fa8c"
+truncation_length = 3
+truncate_to_repo = false
+format = "[$path]($style)[$read_only]($read_only_style)"
+repo_root_format = "[$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style)"
+
+[git_branch]
+style = "bold #8be9fd"
+format = " [$symbol$branch]($style)"
+
+[git_status]
+style = "bold #ff79c6"
+format = " [\\[$all_status$ahead_behind\\]]($style)"
+
+[cmd_duration]
+min_time = 750
+style = "dimmed #bd93f9"
+format = " [took $duration]($style)"
+
+[character]
+success_symbol = "[➜](bold #ffb86c)"
+error_symbol = "[➜](bold #ff5555)"
+vimcmd_symbol = "[➜](bold #8be9fd)"
+
+[package]
+disabled = true
+{{- end }}

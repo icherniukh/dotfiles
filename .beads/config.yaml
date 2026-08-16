@@ -54,3 +54,4 @@
 # - github.repo
 
 sync.remote: "git+https://github.com/icherniukh/dotfiles"
+federation.remote: "git+https://github.com/icherniukh/dotfiles"

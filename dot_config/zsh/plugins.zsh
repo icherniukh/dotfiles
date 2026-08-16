@@ -1,14 +1,34 @@
 # Plugin and completion setup (antidote + Homebrew extras)
 
 # Completions (run early so compdef exists for plugins)
+_zsh_completion_refresh=0
+_zsh_generated_completions="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zsh}/site-functions"
+if mkdir -p "$_zsh_generated_completions" >/dev/null 2>&1 && command -v bd >/dev/null 2>&1; then
+  _bd_completion="${_zsh_generated_completions}/_bd"
+  _bd_bin="$(command -v bd)"
+  if [[ ! -f "$_bd_completion" || "$_bd_bin" -nt "$_bd_completion" ]]; then
+    if bd completion zsh >| "$_bd_completion" 2>/dev/null; then
+      _zsh_completion_refresh=1
+    else
+      rm -f "$_bd_completion"
+    fi
+  fi
+  unset _bd_bin _bd_completion
+fi
 if type brew &>/dev/null; then
   FPATH="${BREW_PREFIX}/share/zsh-completions:$FPATH"
 fi
-fpath=("$HOME/.local/share/zsh/site-functions" $fpath)
+fpath=("$HOME/.local/share/zsh/site-functions" "$_zsh_generated_completions" $fpath)
+unset _zsh_generated_completions
 autoload -Uz compinit
 zmodload zsh/complist
 ZSH_COMPDUMP="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump-${ZSH_VERSION}"
-compinit -C -d "$ZSH_COMPDUMP"
+if [[ $_zsh_completion_refresh -eq 1 ]]; then
+  compinit -d "$ZSH_COMPDUMP"
+else
+  compinit -C -d "$ZSH_COMPDUMP"
+fi
+unset _zsh_completion_refresh
 
 zstyle ':completion:*' completer _expand _complete _ignored
 zstyle ':completion:*:descriptions' format '%F{yellow}%d%f'
@@ -23,8 +43,9 @@ if command -v fnm >/dev/null 2>&1; then
 fi
 
 # Generate a static plugin bundle from `.zsh_plugins.txt` instead of resolving plugins on every shell start.
-zsh_plugins=~/.zsh_plugins.zsh
-if [[ ! -f $zsh_plugins || ~/.zsh_plugins.txt -nt $zsh_plugins ]]; then
+zsh_plugins="${ZSH_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/zsh}/plugins.zsh"
+zsh_plugins_dir="${zsh_plugins:h}"
+if mkdir -p "$zsh_plugins_dir" >/dev/null 2>&1 && [[ ! -f $zsh_plugins || ~/.zsh_plugins.txt -nt $zsh_plugins ]]; then
   # Locate antidote: Homebrew (macOS/Linux) or system install
   _antidote_path=""
   if [[ -f "${BREW_PREFIX}/opt/antidote/share/antidote/antidote.zsh" ]]; then
@@ -38,6 +59,7 @@ if [[ ! -f $zsh_plugins || ~/.zsh_plugins.txt -nt $zsh_plugins ]]; then
   fi
   unset _antidote_path
 fi
+unset zsh_plugins_dir
 # Only load widget-heavy plugins when zle has a real terminal to attach to.
 if [[ -t 0 && -t 1 ]]; then
   [[ -f $zsh_plugins ]] && source $zsh_plugins

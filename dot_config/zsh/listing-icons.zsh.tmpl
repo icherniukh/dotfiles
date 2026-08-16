@@ -1,0 +1,7 @@
+{{- if eq .chezmoi.os "darwin" }}
+alias ls='eza -hF --icons=always --time-style relative --color=auto --no-permissions --no-user --classify --color-scale=age --git'
+alias lz='eza -l --no-user --no-permissions --time-style relative --color=always --color-scale-mode=fixed -1 --icons=always --git-repos --git'
+{{- else }}
+alias ls='eza -hF --icons=never --time-style relative --color=auto --no-permissions --no-user --classify --color-scale=age --git'
+alias lz='eza -l --no-user --no-permissions --time-style relative --color=always --color-scale-mode=fixed -1 --icons=never --git-repos --git'
+{{- end }}

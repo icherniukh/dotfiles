@@ -17,6 +17,7 @@ fi
 
 # Local customizations
 [[ -f "${ZSH_CONFIG_DIR}/aliases.zsh" ]] && source "${ZSH_CONFIG_DIR}/aliases.zsh"
+[[ -f "${ZSH_CONFIG_DIR}/listing-icons.zsh" ]] && source "${ZSH_CONFIG_DIR}/listing-icons.zsh"
 [[ -f "${ZSH_CONFIG_DIR}/functions.zsh" ]] && source "${ZSH_CONFIG_DIR}/functions.zsh"
 [[ -f "${ZSH_CONFIG_DIR}/zshrc_prof.zsh" ]] && source "${ZSH_CONFIG_DIR}/zshrc_prof.zsh"
 [[ -f "${ZSH_CONFIG_DIR}/apikeys.zsh" ]] && source "${ZSH_CONFIG_DIR}/apikeys.zsh"
@@ -105,8 +106,6 @@ _tv_complete() {
 compdef _tv_complete tv
 unset -f _eval_init
 export CLAUDE_CODE_NO_FLICKER=1
-export PATH="$HOME/bin:$PATH"
-export PATH="$HOME/venvs/transcribe/bin:$PATH"
 
 if [[ "$ZPROF" = true ]]; then
   echo "  ## Finished ZPROF"

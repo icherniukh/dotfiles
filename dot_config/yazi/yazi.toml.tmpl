@@ -61,8 +61,10 @@ prepend_fetchers = [
   { id = "git", group = "directory", url = "*/", run = "git" },
   { id = "mime", group = "file", url = "local://*", run = "mime-ext.local", prio = "high" },
   { id = "mime", group = "file", url = "remote://*", run = "mime-ext.remote", prio = "high" },
+{{- if eq .chezmoi.os "darwin" }}
   { id = "mactag", group = "file", url = "*", run = "mactag" },
   { id = "mactag", group = "directory", url = "*/", run = "mactag" },
+{{- end }}
 ]
 
 prepend_previewers = [

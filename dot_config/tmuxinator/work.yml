@@ -1,0 +1,14 @@
+name: work
+root: ~/repos
+
+startup_window: 1
+pre_window: tmux set-window-option automatic-rename off
+
+# One full-screen window per project keeps this comfortable on narrow clients.
+windows:
+  - 1.telegram:
+      root: ~/repos/telegram-llm-dev
+  - 2.dev:
+  - 3.configs:
+      root: ~/.config
+  - 4.util: tmux-work-util

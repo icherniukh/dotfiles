@@ -1,0 +1,9 @@
+name: ops
+root: ~/repos/telegram-llm
+
+startup_window: status
+
+windows:
+  - status: systemctl status telegram-llm.service --no-pager
+  - logs: journalctl -u telegram-llm.service -n 100 -f
+  - shell:

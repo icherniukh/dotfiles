@@ -1,0 +1,9 @@
+name: misc
+root: ~/repos
+
+startup_window: shell
+
+windows:
+  - shell:
+  - files: yazi
+  - system: btop

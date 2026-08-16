@@ -13,6 +13,18 @@ alias hxx='_hxx'
 
 alias goconfig='pushd ~/.config'
 
+# Fast attach helpers for remote-first shells and mobile clients.
+alias ta='tmux new-session -A -s main'
+alias tx='tmuxinator'
+
+ssht() {
+  ssh -t "$@" 'tmux new-session -A -s main'
+}
+
+mosht() {
+  mosh "$@" -- tmux new-session -A -s main
+}
+
 alias srcshell='usource ~/.zshrc'
 alias refreshenv='source ~/.zshrc'
 alias okay='source ~/.zshrc'
@@ -23,15 +35,16 @@ alias mkcd='_mkcd'
 alias yfind="find . -type f -print0 | xargs -0 grep $@"
 
 # File listing aliases
-alias ls='eza -hF --icons=always --time-style relative --color=auto --no-permissions --no-user --classify --color-scale=age --git'
-alias lz='eza -l --no-user --no-permissions --time-style relative --color=always --color-scale-mode=fixed -1 --icons=always --git-repos --git'
+# ls/lz icon flags are platform-specific; see listing-icons.zsh (chezmoi template)
+alias ls='eza -hF --time-style relative --color=auto --no-permissions --no-user --classify --color-scale=age --git'
+alias lz='eza -l --no-user --no-permissions --time-style relative --color=always --color-scale-mode=fixed -1 --git-repos --git'
 alias l='lsd --blocks=git,date,size,name -trG --classify --no-symlink'
-alias ld='lsd --icon-theme fancy -Fh --date=relative --no-symlink'
+alias ld='lsd -Fh --date=relative --no-symlink'
 alias ll='lsd -l -NFL'
 alias la='lsd -ALhg --date relative --no-symlink --permission disable'
 alias lla='lsd -lahFGg --date relative --no-symlink'
-alias lr='lsd --color auto --icon-theme fancy -FLg --tree --depth=2 --no-symlink'
-alias lrr='lsd --color auto --icon-theme=fancy -FLg --tree --depth=3 --no-symlink'
+alias lr='lsd --color auto -FLg --tree --depth=2 --no-symlink'
+alias lrr='lsd --color auto -FLg --tree --depth=3 --no-symlink'
 alias lt='lsd --blocks=date,size,name -tr --classify --no-symlink'
 
 # Utils

@@ -1,0 +1,15 @@
+# Shared defaults for repositories using bd (Beads).
+dolt.auto-commit: "on"
+dolt.auto-push: false
+
+# Keep the tracked JSONL fallback current and include it with the next commit.
+export.auto: true
+export.path: issues.jsonl
+export.interval: 60s
+export.git-add: true
+
+# Preserve the local metrics-consent state managed by bd.
+metrics:
+  disabled: false
+  endpoint: https://gastownhall-eventsapi.com/mp/collect
+  notice_shown: true

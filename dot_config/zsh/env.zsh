@@ -47,3 +47,30 @@ SAVEHIST=6969420
 [[ -n "${BREW_PREFIX:-}" ]] && export GSETTINGS_SCHEMA_DIR="${BREW_PREFIX}/share/glib-2.0/schemas"
 export STARSHIP_CACHE=${STARSHIP_CACHE:-$HOME/.starship/cache}
 export FZF_PATH="${XDG_CONFIG_HOME:-$HOME/.config}/fzf"
+
+# SSH sessions get a clearer, warmer ops-oriented palette so remote shells stand
+# out from local work at a glance.
+if [[ -n "${SSH_CONNECTION:-}" ]]; then
+  export STARSHIP_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/starship-remote.toml"
+  export LS_COLORS='di=1;36:ln=1;35:so=1;31:pi=0;33:ex=1;32:bd=1;33:cd=1;33:su=1;37;41:sg=30;43:tw=30;42:ow=34;42:st=37;44:mi=1;31:or=1;31'
+  export BAT_THEME="${BAT_THEME:-Monokai Extended Bright}"
+fi
+
+# Helix can be installed as a standalone binary without its runtime bundle.
+# Prefer an explicit runtime directory only when it contains the full assets.
+if [[ -z "${HELIX_RUNTIME:-}" ]]; then
+  _helix_runtime_candidates=(
+    "/snap/helix/current/bin/runtime"
+    "${XDG_DATA_HOME:-$HOME/.local/share}/helix/runtime"
+    "${BREW_PREFIX:+${BREW_PREFIX}/share/helix/runtime}"
+    "/usr/local/share/helix/runtime"
+    "/usr/share/helix/runtime"
+  )
+  for _helix_runtime in "${_helix_runtime_candidates[@]}"; do
+    if [[ -n "$_helix_runtime" && -d "$_helix_runtime/queries" && -d "$_helix_runtime/themes" ]]; then
+      export HELIX_RUNTIME="$_helix_runtime"
+      break
+    fi
+  done
+  unset _helix_runtime _helix_runtime_candidates
+fi

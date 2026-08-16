@@ -1,0 +1,40 @@
+#!/usr/bin/env zsh
+
+set -u
+
+idea_root="$HOME/repos/tmp"
+idea_words=(
+  amber birch bloom cedar comet coral ember fern flint grove ivy lunar
+  maple mint moss nova orbit pebble pine pixel river sage spark willow
+)
+
+mkdir -p -- "$idea_root" || exit 1
+
+idea_dir=""
+for _attempt in {1..100}; do
+  candidate="$idea_root/${idea_words[$((RANDOM % ${#idea_words} + 1))]}"
+  if mkdir -- "$candidate" 2>/dev/null; then
+    idea_dir="$candidate"
+    break
+  fi
+done
+
+if [[ -z "$idea_dir" ]]; then
+  print -u2 "Could not create a unique idea directory in $idea_root"
+  exit 1
+fi
+
+cleanup() {
+  if rmdir -- "$idea_dir" 2>/dev/null; then
+    print "Removed empty idea directory: $idea_dir"
+  else
+    print "Kept non-empty idea directory: $idea_dir"
+  fi
+}
+
+trap cleanup EXIT
+trap 'exit 129' HUP TERM
+
+cd -- "$idea_dir" || exit 1
+print "Idea workspace: $idea_dir"
+"${SHELL:-/usr/bin/zsh}" -l

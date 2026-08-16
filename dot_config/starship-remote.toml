@@ -3,9 +3,13 @@
 add_newline = false
 
 format = """
-$username$hostname$cmd_duration\
+$username\
+$hostname\
+$cmd_duration\
 $line_break\
-$directory$git_branch$git_status\
+$directory\
+$git_branch\
+$git_status\
 $line_break\
 $character
 """
@@ -21,14 +25,9 @@ ssh_only = false
 style = "bold #101418 on #ffb86c"
 format = " [@$hostname]($style)"
 
-[cmd_duration]
-min_time = 750
-style = "dimmed #bd93f9"
-format = " [\\[took $duration\\]]($style)"
-
 [directory]
 style = "bold #f1fa8c"
-truncation_length = 2
+truncation_length = 3
 truncate_to_repo = false
 format = "[$path]($style)[$read_only]($read_only_style)"
 repo_root_format = "[$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style)"
@@ -40,6 +39,16 @@ format = " [$symbol$branch]($style)"
 [git_status]
 style = "bold #ff79c6"
 format = " [\\[$all_status$ahead_behind\\]]($style)"
+
+[cmd_duration]
+min_time = 750
+style = "dimmed #bd93f9"
+format = " [took $duration]($style)"
+
+[character]
+success_symbol = "[➜](bold #ffb86c)"
+error_symbol = "[➜](bold #ff5555)"
+vimcmd_symbol = "[➜](bold #8be9fd)"
 
 [package]
 disabled = true

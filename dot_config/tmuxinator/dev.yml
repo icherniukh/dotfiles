@@ -1,0 +1,9 @@
+name: dev
+root: ~/repos/telegram-llm-dev
+
+startup_window: editor
+
+windows:
+  - editor: hx .
+  - shell:
+  - tests:

@@ -22,24 +22,26 @@ require("mime-ext.local"):setup {
 	fallback_file1 = false,
 }
 
-require("mactag"):setup {
-	keys = {
-		r = "Red",
-		o = "Orange",
-		y = "Yellow",
-		g = "Green",
-		b = "Blue",
-		p = "Purple",
-	},
-	colors = {
-		Red = "#ee7b70",
-		Orange = "#f5bd5c",
-		Yellow = "#fbe764",
-		Green = "#91fc87",
-		Blue = "#5fa3f8",
-		Purple = "#cb88f8",
-	},
-}
+if ya.target_family() == "unix" and jit and jit.os == "OSX" then
+	require("mactag"):setup {
+		keys = {
+			r = "Red",
+			o = "Orange",
+			y = "Yellow",
+			g = "Green",
+			b = "Blue",
+			p = "Purple",
+		},
+		colors = {
+			Red = "#ee7b70",
+			Orange = "#f5bd5c",
+			Yellow = "#fbe764",
+			Green = "#91fc87",
+			Blue = "#5fa3f8",
+			Purple = "#cb88f8",
+		},
+	}
+end
 
 local path_sep = package.config:sub(1, 1)
 local home_path = os.getenv("HOME")
@@ -50,14 +52,9 @@ local bookmarks = {
 		key = "h",
 	},
 	{
-		tag = "Projects",
-		path = home_path .. path_sep .. "proj" .. path_sep,
+		tag = "Repos",
+		path = home_path .. path_sep .. "repos" .. path_sep,
 		key = "p",
-	},
-	{
-		tag = "Downloads",
-		path = home_path .. path_sep .. "Downloads" .. path_sep,
-		key = "d",
 	},
 	{
 		tag = "Config",
