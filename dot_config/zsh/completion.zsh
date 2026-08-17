@@ -38,3 +38,14 @@ if (( ${+widgets[history-substring-search-up]} )); then
   bindkey '^P' history-substring-search-up
   bindkey '^N' history-substring-search-down
 fi
+
+# zsh-autosuggestions key bindings
+# These must come AFTER the plugin is loaded (in plugins.zsh via antidote)
+if (( ${+widgets[autosuggest-accept]} )); then
+  # Accept the full suggestion (Ctrl+F is common)
+  bindkey '^F' autosuggest-accept
+  # Accept a single character (right arrow)
+  bindkey '^[[C' autosuggest-accept
+  # Accept the whole line (Ctrl+E)
+  bindkey '^E' autosuggest-accept
+fi

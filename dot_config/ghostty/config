@@ -81,7 +81,7 @@ cursor-text=
 cursor-click-to-move=true
 mouse-hide-while-typing=false
 mouse-shift-capture=false
-mouse-reporting=false
+mouse-reporting=true
 mouse-scroll-multiplier=1
 
 command=

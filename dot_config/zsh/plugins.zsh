@@ -72,3 +72,7 @@ fi
 command -v thefuck >/dev/null 2>&1 && thefuck() { unfunction thefuck; eval $(command thefuck --alias); thefuck "$@"; }
 
 [[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"
+
+if [[ -n $GHOSTTY_RESOURCES_DIR ]]; then
+  source "$GHOSTTY_RESOURCES_DIR"/shell-integration/zsh/ghostty-integration
+fi

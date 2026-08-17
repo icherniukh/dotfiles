@@ -1,5 +1,6 @@
 # Common environment configuration (non-secret).
 export EDITOR=hx
+export VISUAL=hx
 
 # Detect Homebrew prefix (macOS: /opt/homebrew, Linux: /home/linuxbrew/.linuxbrew)
 if [[ -z "${BREW_PREFIX:-}" ]]; then

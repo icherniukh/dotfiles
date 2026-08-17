@@ -20,11 +20,11 @@ wrap = "yes"
 
 [opener]
 
-edit = [{ run = '$EDITOR "$@"', block = true }]
+edit = [{ run = '${EDITOR:-hx} "$@"', block = true, desc = "Helix" }]
 
 [open]
 
-rules = [
+prepend_rules = [
   { mime = "text/*", use = "edit" },
   { url = "*.json", use = "edit" },
   { url = "*.xml", use = "edit" },
