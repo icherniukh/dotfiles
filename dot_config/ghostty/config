@@ -724,4 +724,7 @@ keybind=chain=text:mv $(pbpaste) /home/ivan/.ghostty_saved_$(date +%s)\r
 # Save state (scrollback) to file
 keybind=super+ctrl+alt+shift+f>s=write_scrollback_file:copy
 
+# Reset terminal
+keybind=super+ctrl+alt+shift+f>t=reset
+
 

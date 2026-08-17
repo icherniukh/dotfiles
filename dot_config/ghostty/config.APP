@@ -46,6 +46,7 @@ macos-icon-frame=chrome
 
 keybind = cmd+ctrl+alt+shift+f>m=toggle_mouse_reporting
 keybind = cmd+ctrl+alt+shift+f>r=toggle_readonly
+keybind = cmd+ctrl+alt+shift+f>t=reset
 keybind = cmd+ctrl+alt+shift+f>o=toggle_background_opacity
 keybind = cmd+ctrl+alt+shift+f>j=jump_to_prompt:1
 keybind = cmd+ctrl+alt+shift+f>h=jump_to_prompt:-1
