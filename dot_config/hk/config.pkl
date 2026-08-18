@@ -1,7 +1,7 @@
 /// Global hk config (~/.config/hk/config.pkl). Merged into every hk invocation.
 /// Heavy checks use the "slow" profile — enable with: hk run pre-push -p slow
-amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtins.pkl"
+amends "package://github.com/jdx/hk/releases/download/v1.51.0/hk@1.51.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.51.0/hk@1.51.0#/Builtins.pkl"
 
 local global = new Mapping<String, Step> {
   /// Bare npm/pip/pyenv/nvm/fnm/pipx vs mise+uv

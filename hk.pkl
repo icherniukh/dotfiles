@@ -1,5 +1,5 @@
-amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtins.pkl"
+amends "package://github.com/jdx/hk/releases/download/v1.51.0/hk@1.51.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.51.0/hk@1.51.0#/Builtins.pkl"
 
 /// Dotfiles-repo hk config (NOT deployed to ~/hk.pkl — see .chezmoiignore).
 /// Global hooks for other repos: dot_config/hk/config.pkl → ~/.config/hk/config.pkl
@@ -38,8 +38,11 @@ local quality = new Mapping<String, Step> {
   ["check_executables_have_shebangs"] = Builtins.check_executables_have_shebangs
   ["check_merge_conflict"] = Builtins.check_merge_conflict
   ["check_symlinks"] = Builtins.check_symlinks
-  ["shellcheck"] = (Builtins.shellcheck) {
+  // hk 1.51's builtin already supplies match_any. Define this scoped command
+  // directly so the repository glob can coexist with the current matcher.
+  ["shellcheck"] = new Config.Step {
     glob = List("dot_scripts/**", "dot_config/**/*.sh", "run_*")
+    check = "shellcheck {{ files }}"
   }
 }
 
