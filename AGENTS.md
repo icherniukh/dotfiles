@@ -35,3 +35,11 @@ cp -rf source dest          # NOT: cp -r source dest
 - `ssh` - use `-o BatchMode=yes` to fail instead of prompting
 - `apt-get` - use `-y` flag
 - `brew` - use `HOMEBREW_NO_AUTO_UPDATE=1` env var
+
+## Chezmoi Workflow
+
+- This repo is the chezmoi source. Edit files here, then `chezmoi apply <target>`, scoped to the paths you touched.
+- If a live file changed directly (by hand or by a tool), run `chezmoi re-add <target>` (or `chezmoi add` for new files) before the next apply, or the apply will revert it.
+- `chezmoi status <target>` must be empty before calling a change done. Check `chezmoi diff` first and report unrelated drift instead of absorbing or overwriting it.
+- Yazi plugins/flavors are managed by `ya pkg`. After `ya pkg install/upgrade`, run `chezmoi add ~/.config/yazi/package.toml ~/.config/yazi/plugins/<name>.yazi` (see ADR-003).
+- Log notable config decisions and reversions in `DECISIONS.md`.

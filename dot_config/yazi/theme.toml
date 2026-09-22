@@ -1,6 +1,7 @@
 [flavor]
 # dark = "kanagawa-dragon"
-dark = "kanagawa"
+# dark = "kanagawa"
+dark = "kanagawa-contrast"
 # dark = "everforest-medium"
 # dark = "vscode-dark-modern"
 # dark = "dracula"
@@ -134,7 +135,11 @@ dark = "kanagawa"
 rules = [
     { url = "*", is = "block", fg = "#5f87d7" },
     { url = "*", is = "char", fg = "#87d75f", bold = true },
-    { url = "*/", fg = "#008787" },
+    # { url = "*/", fg = "#008787" },  # old teal, 3.75:1
+    { url = "*/", fg = "#b8a4e3" },       # soft lavender, 7.4:1 (default)
+    # { url = "*/", fg = "#e0a3b8" },     # dusty rose, 7.9:1
+    # { url = "*/", fg = "#e6c384" },     # warm sand (carpYellow), 9.7:1
+    # { url = "*/", fg = "#7fb4ca" },     # springBlue, 7.2:1
     { url = "*", is = "exec", fg = "#ff8700", bold = true },
     { url = "*", is = "fifo", fg = "#af0087" },
     { url = "*", is = "orphan", fg = "#080808", bg = "#ff0000", bold = true },

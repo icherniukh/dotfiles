@@ -242,3 +242,15 @@ antidote() {
   source "$_antidote_path"
   antidote "$@"
 }
+
+# bd init: default to --stealth -> beads stays local (.git/info/exclude), no auto-commit,
+# no git hooks, no AGENTS.md/CLAUDE.md/.cursor/.codex/.agents clutter.
+# Opt out for a shared/team tracker with: command bd init ...  (or pass --team/--contributor)
+bd() {
+  if [[ $1 == init && " $* " != *" --stealth "* && " $* " != *" --team "* && " $* " != *" --contributor "* ]]; then
+    shift
+    command bd init --stealth "$@"
+  else
+    command bd "$@"
+  fi
+}
