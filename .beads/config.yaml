@@ -52,3 +52,6 @@
 # - linear.api-key
 # - github.org
 # - github.repo
+
+# Stealth mode: bd performs no git operations (commits, pushes) on its own.
+no-git-ops: true

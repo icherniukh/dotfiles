@@ -26,3 +26,4 @@ dot_config/zsh/local.zsh
 
 # Serena
 .serena/
+.beads.gate.lock
