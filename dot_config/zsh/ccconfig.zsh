@@ -5,6 +5,7 @@
 # Enable telemetry
 export CLAUDE_CODE_ENABLE_TELEMETRY=0
 # export CLAUDE_CODE_ENABLE_TELEMETRY=1
+[[ $CLAUDE_CODE_ENABLE_TELEMETRY == 1 ]] || return  # don't leak OTEL_* into every process
 
 # ============================================================================
 # EXPORTER CONFIGURATION

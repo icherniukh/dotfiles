@@ -23,6 +23,15 @@ export XDG_CACHE_HOME=${XDG_CACHE_HOME:-$HOME/.cache}
 export XDG_STATE_HOME=${XDG_STATE_HOME:-$HOME/.local/state}
 export XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
 
+# On Linux, /tmp is commonly a RAM-backed tmpfs sized to a fraction of total
+# memory (systemd default). That's fine for small scratch files, but build
+# tools (cargo, npm, pip) can dump multi-GB artifacts into $TMPDIR and exhaust
+# RAM on memory-constrained boxes. Point TMPDIR at real disk instead.
+if [[ "$(uname)" == "Linux" ]]; then
+  export TMPDIR="${XDG_CACHE_HOME}/tmp"
+  mkdir -p "$TMPDIR" 2>/dev/null
+fi
+
 # Zsh cache/history locations
 export ZSH_CACHE_DIR="$XDG_CACHE_HOME/zsh"
 export HISTFILE="${XDG_STATE_HOME}/zsh/history"

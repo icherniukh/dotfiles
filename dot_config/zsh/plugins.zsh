@@ -64,13 +64,23 @@ unset zsh_plugins_dir
 if [[ -t 0 && -t 1 ]]; then
   [[ -f $zsh_plugins ]] && source $zsh_plugins
 
-  # Plugin configs (Homebrew-installed using BREW_PREFIX for portability)
-  [[ -f "${BREW_PREFIX}/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && \
-    source "${BREW_PREFIX}/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
-  [[ -f "${BREW_PREFIX}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && \
-    source "${BREW_PREFIX}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-  [[ -f "${BREW_PREFIX}/share/zsh-history-substring-search/zsh-history-substring-search.zsh" ]] && \
-    source "${BREW_PREFIX}/share/zsh-history-substring-search/zsh-history-substring-search.zsh"
+  # Plugin configs: prefer Homebrew (BREW_PREFIX), fall back to distro package paths
+  # (e.g. Debian/Ubuntu installs these under /usr/share via apt/nala).
+  _plugin_source() {
+    local brew_path="$1" distro_path="$2"
+    if [[ -n "${BREW_PREFIX:-}" && -f "${BREW_PREFIX}/${brew_path}" ]]; then
+      source "${BREW_PREFIX}/${brew_path}"
+    elif [[ -f "$distro_path" ]]; then
+      source "$distro_path"
+    fi
+  }
+  _plugin_source "share/zsh-autosuggestions/zsh-autosuggestions.zsh" \
+    "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+  _plugin_source "share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" \
+    "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+  _plugin_source "share/zsh-history-substring-search/zsh-history-substring-search.zsh" \
+    "/usr/share/zsh-history-substring-search/zsh-history-substring-search.zsh"
+  unset -f _plugin_source
 
   ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#666666"
 
