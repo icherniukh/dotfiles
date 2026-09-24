@@ -1,45 +1,90 @@
+# Phone prompt: loaded when Moshi connects (MOSHI_CLIENT, see zsh/prompt.zsh).
+# Each module carries its leading space, so line 1 never ends in padding.
 "$schema" = 'https://starship.rs/config-schema.json'
 
+# Tuned for a phone over mosh/tmux: ~45-60 columns, little vertical space.
+# Line 1 = where am I + git + slow/failed info; line 2 = input, so typing
+# always starts at column 0 and long paths never wrap the command.
 add_newline = false
+command_timeout = 300   # never let a slow git call stall the prompt over mosh
 
 format = """
-$username$hostname$cmd_duration\
-$line_break\
-$directory$git_branch$git_status\
-$line_break\
-$character
-"""
+$directory$git_branch$git_state$git_status$git_metrics$python$jobs$cmd_duration$status$memory_usage${custom.load}$sudo
+$character"""
 
-[username]
-show_always = true
-style_user = "bold #8be9fd"
-style_root = "bold #ff5555"
-format = "[$user]($style)"
-
-[hostname]
-ssh_only = false
-style = "bold #101418 on #ffb86c"
-format = " [@$hostname]($style)"
-
-[cmd_duration]
-min_time = 750
-style = "dimmed #bd93f9"
-format = " [\\[took $duration\\]]($style)"
+# Right side of the input line: clock (Moshi blanks tmux status-right, so the
+# bar clock is gone on the phone). zsh drops it when the command reaches it.
+right_format = '$time'
 
 [directory]
-style = "bold #f1fa8c"
+format = '[$path]($style)[$read_only]($read_only_style)'
 truncation_length = 2
-truncate_to_repo = false
-format = "[$path]($style)[$read_only]($read_only_style)"
-repo_root_format = "[$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style)"
+truncate_to_repo = true
+truncation_symbol = '…/'
+style = 'bold cyan'
 
 [git_branch]
-style = "bold #8be9fd"
-format = " [$symbol$branch]($style)"
+format = ' [$branch]($style)'
+truncation_length = 20
+truncation_symbol = '…'
+style = 'purple'
 
 [git_status]
-style = "bold #ff79c6"
-format = " [\\[$all_status$ahead_behind\\]]($style)"
+format = '( [$all_status$ahead_behind]($style))'
+style = 'yellow'
+deleted = '-'
 
-[package]
-disabled = true
+[git_state]
+format = ' [$state( $progress_current/$progress_total)]($style)'
+
+[python]
+format = ' [$virtualenv]($style)'   # venv name only, no version
+detect_extensions = []
+detect_files = []
+
+[jobs]
+format = ' [✦$number]($style)'
+number_threshold = 1
+
+[cmd_duration]
+min_time = 3000
+format = ' [$duration]($style)'
+style = 'dimmed yellow'
+
+[status]
+disabled = false
+format = ' [✘$status]($style)'
+style = 'red'
+
+[character]
+success_symbol = '[➜](bold green)'
+error_symbol = '[➜](bold red)'
+
+[git_metrics]
+disabled = false
+format = '( [+$added]($added_style))( [-$deleted]($deleted_style))'
+
+[memory_usage]
+disabled = false
+threshold = 80
+format = ' [mem$ram_pct]($style)'
+style = 'red'
+
+# 1-min load, only when above the CPU count
+[custom.load]
+command = 'cut -d" " -f1 /proc/loadavg'
+when = 'awk -v n=$(nproc) "{exit !(\$1>n)}" /proc/loadavg'
+format = ' [ld$output]($style)'
+style = 'red'
+shell = ['sh']
+
+[sudo]
+disabled = false
+format = ' [sudo]($style)'
+style = 'bold red'
+
+[time]
+disabled = false
+format = '[$time]($style)'
+time_format = '%H:%M'
+style = 'dimmed white'

@@ -1,6 +1,8 @@
 # SSH sessions get a darker terminal backdrop and warm cursor so remote shells
 # read differently before you even see the prompt.
-if [[ -n "${SSH_CONNECTION:-}" && -t 0 && -t 1 ]]; then
+# Off by default: terminal themes live in the client (Moshi/desktop app);
+# set SSH_RECOLOR=1 to force these colours anyway.
+if [[ -n "${SSH_RECOLOR:-}" && -n "${SSH_CONNECTION:-}" && -t 0 && -t 1 ]]; then
   _emit_osc() {
     if [[ -n "${TMUX:-}" ]]; then
       printf '\033Ptmux;\033\033]%s\007\033\\' "$1"
