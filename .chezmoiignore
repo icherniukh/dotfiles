@@ -10,8 +10,8 @@ tests/
 hk.pkl
 
 {{ if ne .chezmoi.os "darwin" }}
-dot_config/ghostty/
-dot_hammerspoon/
+.config/ghostty
+.hammerspoon
 **/*.darwin.zsh
 {{ end }}
 
