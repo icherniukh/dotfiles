@@ -83,6 +83,8 @@ if [[ -o interactive ]]; then
   _zsh_stale_dump=("$ZSH_COMPDUMP"(N.mh+24))
   if (( _zsh_completion_refresh || $#_zsh_stale_dump )) || [[ ! -s "$ZSH_COMPDUMP" ]]; then
     compinit -d "$ZSH_COMPDUMP"
+    # compinit leaves an unchanged dump untouched; bump it so the 24h clock restarts.
+    touch "$ZSH_COMPDUMP"
     { zcompile "$ZSH_COMPDUMP" } &!
   else
     compinit -C -d "$ZSH_COMPDUMP"

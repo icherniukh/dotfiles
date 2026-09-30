@@ -85,3 +85,9 @@ fi
 
 # OpenCode
 [[ -d "$HOME/.opencode/bin" ]] && path+=("$HOME/.opencode/bin")
+
+# Move user bins back to the front, ahead of Homebrew/MacPorts and runtime
+# managers, so local wrappers and self-installed tools (incl. mise) win.
+[[ -d "$HOME/.cargo/bin" ]] && path=("$HOME/.cargo/bin" $path)
+[[ -d "$HOME/.local/bin" ]] && path=("$HOME/.local/bin" $path)
+[[ -d "$HOME/bin" ]] && path=("$HOME/bin" $path)
