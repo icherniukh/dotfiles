@@ -1,0 +1,88 @@
+amends "package://github.com/jdx/hk/releases/download/v1.51.0/hk@1.51.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.51.0/hk@1.51.0#/Builtins.pkl"
+
+/// Dotfiles-repo hk config (NOT deployed to ~/hk.pkl — see .chezmoiignore).
+/// Global hooks for other repos: dot_config/hk/config.pkl → ~/.config/hk/config.pkl
+/// Secret scans: use `hk-dotfiles-secrets` (staging dir), never raw gitleaks here.
+
+local gitleaks_scoped = new Config.Step {
+  glob = "**/*"
+  exclude = List(
+    "**/*.example.*",
+    "**/secrets.example*",
+    "**/*.md",
+    "**/*.png",
+    "**/*.jpg",
+    "**/*.gif",
+    "**/*.svg",
+    "**/*.zwc",
+    "**/yazi/plugins/**",
+  )
+  types = List("text")
+  check = "gitleaks detect --no-git --redact --verbose --no-banner --source ."
+}
+
+local secrets = new Mapping<String, Step> {
+  ["gitleaks"] = gitleaks_scoped
+  ["detect_private_key"] = (Builtins.detect_private_key) {
+    exclude = List(
+      "**/*.example.*",
+      "**/secrets.example*",
+      "**/*.md",
+      "**/yazi/plugins/**",
+    )
+  }
+}
+
+local quality = new Mapping<String, Step> {
+  ["check_executables_have_shebangs"] = Builtins.check_executables_have_shebangs
+  ["check_merge_conflict"] = Builtins.check_merge_conflict
+  ["check_symlinks"] = Builtins.check_symlinks
+  // hk 1.51's builtin already supplies match_any. Define this scoped command
+  // directly so the repository glob can coexist with the current matcher.
+  ["shellcheck"] = new Config.Step {
+    glob = List("dot_scripts/**", "dot_config/**/*.sh", "run_*")
+    check = "shellcheck {{ files }}"
+  }
+}
+
+local dotfiles = new Mapping<String, Step> {
+  /// mise/uv/npm/pip/pyenv/nvm/fnm/pipx hygiene on the live machine
+  ["audit_runtimes"] {
+    check = "audit-runtimes --hk"
+  }
+  /// mise health on the live machine
+  ["mise_doctor"] {
+    profiles = List("slow")
+    check = "command -v mise >/dev/null && mise doctor"
+  }
+  /// Chezmoi source matches deployed dotfiles
+  ["chezmoi_verify"] {
+    check = "command -v chezmoi >/dev/null && chezmoi verify"
+  }
+}
+
+hooks {
+  ["secrets"] {
+    steps = secrets
+  }
+  ["check"] {
+    steps = secrets + quality + dotfiles
+  }
+  /// Staged-file guards only. Full gitleaks runs via apply-guard staging.
+  ["pre-commit"] {
+    stash = "git"
+    steps = new Mapping<String, Step> {
+      ["detect_private_key"] = Builtins.detect_private_key
+      ["audit_runtimes"] = dotfiles["audit_runtimes"]
+    }
+  }
+  ["pre-push"] {
+    steps = new Mapping<String, Step> {
+      ["detect_private_key"] = Builtins.detect_private_key
+      ["audit_runtimes"] = dotfiles["audit_runtimes"]
+      ["chezmoi_verify"] = dotfiles["chezmoi_verify"]
+      ["mise_doctor"] = dotfiles["mise_doctor"]
+    }
+  }
+}

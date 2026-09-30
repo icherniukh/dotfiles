@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Stage chezmoi-managed source files into an isolated directory for hk/gitleaks.
+# Usage: hk-chezmoi-staging [SOURCE_ROOT]
+# Prints the staging directory path to stdout.
+set -euo pipefail
+
+ROOT="${1:-$(chezmoi source-path 2>/dev/null || echo "$HOME/proj/dotfiles")}"
+STAGING="$(mktemp -d "${TMPDIR:-/tmp}/chezmoi-hk-staging.XXXXXX")"
+
+stage_file() {
+  local src="$1" rel dest
+  rel="${src#"$ROOT"/}"
+  dest="$STAGING/$rel"
+  mkdir -p "$(dirname "$dest")"
+  cp -a "$src" "$dest"
+}
+
+while IFS= read -r -d '' path; do
+  case "$path" in
+    */.git/*|*/.beads/*|*/.claude/*) continue ;;
+    *.png|*.jpg|*.gif|*.svg|*.zwc) continue ;;
+  esac
+  stage_file "$path"
+done < <(find "$ROOT" \( \
+  -path "$ROOT/dot_*" -o \
+  -path "$ROOT/dot_config/*" -o \
+  -path "$ROOT/dot_scripts/*" -o \
+  -path "$ROOT/run_*" \
+  \) -type f -print0 2>/dev/null)
+
+[[ -f "$ROOT/hk.pkl" ]] && cp "$ROOT/hk.pkl" "$STAGING/hk.pkl"
+git -C "$STAGING" init -q
+
+echo "$STAGING"

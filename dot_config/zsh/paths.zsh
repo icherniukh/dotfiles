@@ -40,37 +40,43 @@ unset _managed_path_dir _managed_path_dirs
 # Package manager core bins
 [[ -n "${BREW_PREFIX:-}" ]] && export PATH="${BREW_PREFIX}/bin:${BREW_PREFIX}/sbin:$PATH"
 
-# MacPorts (macOS only)
-[[ "$(uname)" == "Darwin" && -d /opt/local/bin ]] && export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
+# OS-specific paths
+_os_paths="${ZSH_CONFIG_DIR}/paths.${(L)$(uname)}.zsh"
+[[ -f "$_os_paths" ]] && source "$_os_paths"
+unset _os_paths
 
-# Homebrew Ruby - main binaries
-[[ -n "${BREW_PREFIX:-}" ]] && export PATH="${BREW_PREFIX}/opt/ruby/bin:$PATH"
+# Language runtimes: mise owns node/python/ruby/bun/rust where it is installed
+# (see docs/runtime-transition.html). Machines without mise keep the legacy
+# per-tool setup below.
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate zsh)"
+  # mise's Rust backend delegates to rustup, so rustc/cargo are rustup shims.
+  [[ -n "${CARGO_HOME:-}" && -d "$CARGO_HOME/bin" ]] && export PATH="$CARGO_HOME/bin:$PATH"
+else
+  # Homebrew Ruby - main binaries
+  [[ -n "${BREW_PREFIX:-}" && -d "${BREW_PREFIX}/opt/ruby/bin" ]] && export PATH="${BREW_PREFIX}/opt/ruby/bin:$PATH"
 
-# Ruby gem executables - include the active Ruby's bindir and per-user gem bin.
-# This covers user-installed gems like `colorls`, not just Homebrew-managed gems.
-if command -v ruby >/dev/null 2>&1; then
-  _ruby_runtime_paths=(${(f)"$(ruby -rrubygems -e 'puts Gem.bindir; puts File.join(Gem.user_dir, %q{bin})' 2>/dev/null)"})
-  for _ruby_path in "${_ruby_runtime_paths[@]}"; do
-    [[ -n "$_ruby_path" && -d "$_ruby_path" ]] && export PATH="$_ruby_path:$PATH"
-  done
-  unset _ruby_path _ruby_runtime_paths
-fi
+  # Ruby gem executables - include the active Ruby's bindir and per-user gem bin.
+  # This covers user-installed gems like `colorls`, not just Homebrew-managed gems.
+  if command -v ruby >/dev/null 2>&1; then
+    _ruby_runtime_paths=(${(f)"$(ruby -rrubygems -e 'puts Gem.bindir; puts File.join(Gem.user_dir, %q{bin})' 2>/dev/null)"})
+    for _ruby_path in "${_ruby_runtime_paths[@]}"; do
+      [[ -n "$_ruby_path" && -d "$_ruby_path" ]] && export PATH="$_ruby_path:$PATH"
+    done
+    unset _ruby_path _ruby_runtime_paths
+  fi
 
-# Homebrew Ruby gems - use highest version number dynamically
-# Sorts numerically so 4.0.0 > 3.4.0, handles both 3.x and 4.x maintenance
-_ruby_gem_versions=(${BREW_PREFIX:+${BREW_PREFIX}/lib/ruby/gems/*/bin}(N))
-if [[ $#_ruby_gem_versions -gt 0 ]]; then
-  # Sort numerically and take the highest version
-  _ruby_highest_version=$(printf '%s\n' "${_ruby_gem_versions[@]}" | sort -V | tail -1)
-  export PATH="${_ruby_highest_version}:$PATH"
-fi
-unset _ruby_gem_versions _ruby_highest_version
+  # `pyenv init -` adds shims, completion, and rehash hooks; PATH alone is not enough.
+  export PYENV_ROOT="$HOME/.pyenv"
+  [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+  command -v pyenv >/dev/null 2>&1 && eval "$(pyenv init -)"
 
-# `pyenv init -` adds shims, completion, and rehash hooks; PATH alone is not enough.
-export PYENV_ROOT="$HOME/.pyenv"
-[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-if command -v pyenv >/dev/null 2>&1; then
-  eval "$(pyenv init -)"
+  # `fnm env --use-on-cd` installs the on-directory-change Node version hooks.
+  command -v fnm >/dev/null 2>&1 && eval "$(fnm env --use-on-cd --shell zsh)"
+
+  # Bun
+  export BUN_INSTALL="$HOME/.bun"
+  [[ -d "$BUN_INSTALL/bin" ]] && path+=("$BUN_INSTALL/bin")
 fi
 
 # Kiro/Windsurf/other CLI additions
@@ -79,7 +85,3 @@ fi
 
 # OpenCode
 [[ -d "$HOME/.opencode/bin" ]] && path+=("$HOME/.opencode/bin")
-
-# Bun
-export BUN_INSTALL="$HOME/.bun"
-[[ -d "$BUN_INSTALL/bin" ]] && path+=("$BUN_INSTALL/bin")

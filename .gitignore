@@ -23,3 +23,7 @@ dot_config/zsh/local.zsh
 .dolt/
 *.db
 .beads-credential-key
+
+# Serena
+.serena/
+.beads.gate.lock

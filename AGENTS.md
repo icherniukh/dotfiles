@@ -36,13 +36,10 @@ cp -rf source dest          # NOT: cp -r source dest
 - `apt-get` - use `-y` flag
 - `brew` - use `HOMEBREW_NO_AUTO_UPDATE=1` env var
 
-<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal -->
-## Beads Issue Tracker
+## Chezmoi Workflow
 
-This project uses **bd (beads)** for issue tracking.
-
-- Run `bd prime` for the current workflow context.
-- Core commands: `bd ready`, `bd show <id>`, `bd update <id> --claim`, `bd close <id>`.
-- Use `bd` for persistent task tracking instead of markdown TODO lists.
-- Use `bd remember` only for evergreen facts not already captured well in issue descriptions.
-<!-- END BEADS INTEGRATION -->
+- This repo is the chezmoi source. Edit files here, then `chezmoi apply <target>`, scoped to the paths you touched.
+- If a live file changed directly (by hand or by a tool), run `chezmoi re-add <target>` (or `chezmoi add` for new files) before the next apply, or the apply will revert it.
+- `chezmoi status <target>` must be empty before calling a change done. Check `chezmoi diff` first and report unrelated drift instead of absorbing or overwriting it.
+- Yazi plugins/flavors are managed by `ya pkg`. After `ya pkg install/upgrade`, run `chezmoi add ~/.config/yazi/package.toml ~/.config/yazi/plugins/<name>.yazi` (see ADR-003).
+- Log notable config decisions and reversions in `DECISIONS.md`.

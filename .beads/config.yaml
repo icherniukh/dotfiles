@@ -55,3 +55,6 @@
 
 sync.remote: "git+https://github.com/icherniukh/dotfiles"
 federation.remote: "git+https://github.com/icherniukh/dotfiles"
+
+# Stealth mode: bd performs no git operations (commits, pushes) on its own.
+no-git-ops: true

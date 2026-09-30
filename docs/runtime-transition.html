@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dotfiles Runtime Transition</title>
+  <style>
+    :root {
+      --ink: #211b16;
+      --muted: #76695f;
+      --paper: #f6efe2;
+      --card: #fffaf0;
+      --line: #dccfba;
+      --accent: #d95f18;
+      --accent-dark: #87360f;
+      --ok: #3d7a35;
+      --warn: #b36b00;
+      --shadow: 0 18px 45px rgb(69 45 24 / 16%);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background:
+        radial-gradient(circle at 10% 10%, rgb(217 95 24 / 18%), transparent 32rem),
+        radial-gradient(circle at 90% 0%, rgb(61 122 53 / 14%), transparent 28rem),
+        linear-gradient(135deg, #f3e6cf 0%, #fbf4e8 48%, #efe1cc 100%);
+      color: var(--ink);
+      font-family: Charter, "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+    }
+
+    button,
+    code,
+    pre,
+    .mono {
+      font-family: "Berkeley Mono", "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    .shell {
+      min-height: 100vh;
+      padding: 40px clamp(18px, 4vw, 64px);
+    }
+
+    header {
+      display: grid;
+      gap: 22px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      margin: 0 auto 28px;
+      max-width: 1180px;
+    }
+
+    h1 {
+      font-size: clamp(46px, 9vw, 118px);
+      letter-spacing: -0.08em;
+      line-height: 0.88;
+      margin: 0;
+      max-width: 900px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: clamp(18px, 2vw, 23px);
+      line-height: 1.35;
+      margin: 18px 0 0;
+      max-width: 720px;
+    }
+
+    .stamp {
+      align-self: start;
+      background: var(--ink);
+      border-radius: 999px;
+      color: var(--paper);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      padding: 12px 16px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    main {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: 1.05fr 0.95fr;
+      margin: 0 auto;
+      max-width: 1180px;
+    }
+
+    section,
+    aside {
+      background: rgb(255 250 240 / 82%);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: clamp(20px, 3vw, 34px);
+    }
+
+    .wide {
+      grid-column: 1 / -1;
+    }
+
+    h2 {
+      font-size: clamp(25px, 3vw, 40px);
+      letter-spacing: -0.045em;
+      margin: 0 0 18px;
+    }
+
+    h3 {
+      font-size: 18px;
+      margin: 26px 0 10px;
+    }
+
+    p {
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tile {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 16px;
+    }
+
+    .tile strong {
+      display: block;
+      font-size: 17px;
+      margin-bottom: 8px;
+    }
+
+    .pill {
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      color: var(--accent-dark);
+      display: inline-block;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      margin: 0 6px 8px 0;
+      padding: 6px 9px;
+      text-transform: uppercase;
+    }
+
+    .status {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+    }
+
+    .status div {
+      align-items: center;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 92px 1fr;
+    }
+
+    .status dt {
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .status dd {
+      margin: 0;
+    }
+
+    pre {
+      background: #211b16;
+      border-radius: 18px;
+      color: #f9ead2;
+      font-size: 13px;
+      line-height: 1.55;
+      margin: 12px 0;
+      overflow-x: auto;
+      padding: 18px;
+    }
+
+    code {
+      font-size: 0.92em;
+    }
+
+    .command {
+      position: relative;
+    }
+
+    .copy {
+      background: var(--accent);
+      border: 0;
+      border-radius: 999px;
+      color: white;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 7px 10px;
+      position: absolute;
+      right: 12px;
+      top: 12px;
+    }
+
+    .checklist {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    label {
+      align-items: start;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      cursor: pointer;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: auto 1fr;
+      line-height: 1.35;
+      padding: 13px;
+    }
+
+    input[type="checkbox"] {
+      accent-color: var(--accent);
+      margin-top: 2px;
+      transform: scale(1.2);
+    }
+
+    label.done {
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+
+    .note {
+      border-left: 4px solid var(--warn);
+      color: var(--muted);
+      margin: 16px 0 0;
+      padding-left: 14px;
+    }
+
+    .ok {
+      color: var(--ok);
+      font-weight: 700;
+    }
+
+    .warn {
+      color: var(--warn);
+      font-weight: 700;
+    }
+
+    @media (max-width: 860px) {
+      header,
+      main,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stamp {
+        justify-self: start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <h1>runtime transition map</h1>
+        <p class="subtitle">A compact control panel for moving dotfiles runtime ownership from scattered package managers to mise and uv without losing the CLIs that actually matter.</p>
+      </div>
+      <div class="stamp">dotfiles / 2026-06-16</div>
+    </header>
+
+    <main>
+      <section>
+        <h2>Source of Truth</h2>
+        <div class="grid">
+          <div class="tile">
+            <strong>Runtime manager</strong>
+            <span class="pill">mise</span>
+            <p><code>dot_config/mise/config.toml</code> owns Node, Bun, Python, Ruby, Rust, uv, and <code>gem:colorls</code>.</p>
+          </div>
+          <div class="tile">
+            <strong>Python tools</strong>
+            <span class="pill">uv tool</span>
+            <p><code>pipx</code> should stay empty. Python CLIs move through <code>uv tool install</code>.</p>
+          </div>
+          <div class="tile">
+            <strong>Shell activation</strong>
+            <span class="pill">zsh</span>
+            <p><code>dot_config/zsh/paths.zsh</code> activates mise and keeps Rust shims available via <code>$CARGO_HOME/bin</code>.</p>
+          </div>
+          <div class="tile">
+            <strong>Homebrew role</strong>
+            <span class="pill">reduced</span>
+            <p>Keep Homebrew for macOS/system packages. Stop using it as the owner for language runtimes migrated to mise.</p>
+          </div>
+        </div>
+
+        <h3>Current mise tools</h3>
+        <pre>[tools]
+bun = "1.3.14"
+"gem:colorls" = "latest"
+node = "24"
+python = "3.13"
+ruby = "3.4"
+rust = { version = "stable", profile = "minimal", components = "rustfmt,clippy" }
+uv = "latest"</pre>
+      </section>
+
+      <aside>
+        <h2>Known Good Paths</h2>
+        <dl class="status">
+          <div><dt>node</dt><dd><code>~/.local/share/mise/installs/node/24/bin/node</code></dd></div>
+          <div><dt>npm</dt><dd><code>~/.local/share/mise/installs/node/24/bin/npm</code></dd></div>
+          <div><dt>npx</dt><dd><code>~/.local/share/mise/installs/node/24/bin/npx</code></dd></div>
+          <div><dt>ruby</dt><dd><code>~/.local/share/mise/installs/ruby/3.4/bin/ruby</code></dd></div>
+          <div><dt>colorls</dt><dd><code>~/.local/share/mise/installs/gem-colorls/latest/bin/colorls</code></dd></div>
+          <div><dt>rust</dt><dd><code>~/.cargo/bin/rustc</code> and <code>~/.cargo/bin/cargo</code></dd></div>
+          <div><dt>uv</dt><dd><code>~/.local/share/mise/installs/uv/latest/...</code></dd></div>
+          <div><dt>bun</dt><dd><code>~/.local/share/mise/installs/bun/1.3.14/bin/bun</code></dd></div>
+        </dl>
+        <p class="note">If a quick terminal disagrees, open a clean login shell first. If only the app terminal fails, inspect how that terminal starts zsh.</p>
+      </aside>
+
+      <section class="wide">
+        <h2>Verification Commands</h2>
+        <p>Run these after every shell/runtime edit. They should be boring.</p>
+
+        <div class="command">
+          <button class="copy" data-copy="verify">copy</button>
+          <pre id="verify">env -i HOME="$HOME" USER="$USER" LOGNAME="$USER" SHELL=/bin/zsh TERM=xterm-256color PATH=/usr/bin:/bin:/usr/sbin:/sbin /bin/zsh -ilc '
+print -r -- "node=$(command -v node)"
+print -r -- "npm=$(command -v npm)"
+print -r -- "npx=$(command -v npx)"
+print -r -- "ruby=$(command -v ruby)"
+print -r -- "colorls=$(command -v colorls)"
+print -r -- "rustc=$(command -v rustc)"
+print -r -- "cargo=$(command -v cargo)"
+print -r -- "uv=$(command -v uv)"
+print -r -- "bun=$(command -v bun)"
+npm config get prefix
+npx --version
+'</pre>
+        </div>
+
+        <div class="command">
+          <button class="copy" data-copy="inventory">copy</button>
+          <pre id="inventory">mise install
+uv tool list
+pipx list
+chezmoi diff --source /Users/ivan/proj/dotfiles</pre>
+        </div>
+      </section>
+
+      <section>
+        <h2>When a CLI Disappears</h2>
+        <p>Do not restore old runtime managers just to get a command back. Decide who should own the CLI, then reinstall it intentionally.</p>
+
+        <h3>Node CLIs</h3>
+        <div class="command">
+          <button class="copy" data-copy="node-global">copy</button>
+          <pre id="node-global"># Make sure npm is the mise-owned npm first.
+command -v npm
+npm config get prefix
+
+# Then reinstall only the commands you still use.
+npm install -g &lt;package&gt;</pre>
+        </div>
+        <p class="note">The Node reinstall cleaned out old global npm shims. That is good hygiene unless one of those CLIs is still active work.</p>
+
+        <h3>Python CLIs</h3>
+        <div class="command">
+          <button class="copy" data-copy="uv-tool">copy</button>
+          <pre id="uv-tool">uv tool install &lt;package&gt;
+uv tool list</pre>
+        </div>
+
+        <h3>Ruby CLIs</h3>
+        <div class="command">
+          <button class="copy" data-copy="ruby-gem">copy</button>
+          <pre id="ruby-gem"># Track durable gems in dot_config/mise/config.toml.
+"gem:&lt;gem-name&gt;" = "latest"
+
+mise install gem:&lt;gem-name&gt;</pre>
+        </div>
+      </section>
+
+      <aside>
+        <h2>Transition Checklist</h2>
+        <p class="mono"><span id="done-count">0</span>/<span id="total-count">0</span> complete</p>
+        <div class="checklist" id="checklist">
+          <label><input type="checkbox" data-key="clean-shell"> Clean login zsh resolves mise-owned Node, npm, npx, Ruby, Bun, uv, and colorls.</label>
+          <label><input type="checkbox" data-key="pipx-empty"> <code>pipx list</code> is empty after migration to <code>uv tool</code>.</label>
+          <label><input type="checkbox" data-key="node-globals"> Missing npm global CLIs were reinstalled deliberately or left dead.</label>
+          <label><input type="checkbox" data-key="brew-audit"> Homebrew formulae for migrated runtimes were audited before uninstalling.</label>
+          <label><input type="checkbox" data-key="chezmoi-clean"> <code>chezmoi diff</code> is clean after apply.</label>
+          <label><input type="checkbox" data-key="issue-comment"> <code>bd</code> issue has a comment with final runtime ownership decisions.</label>
+        </div>
+      </aside>
+
+      <section class="wide">
+        <h2>Compact Context</h2>
+        <p><span class="ok">Current direction:</span> mise owns language runtimes, uv owns Python app CLIs, Homebrew backs away from runtimes, and stale bootstrap fragments get deleted instead of shimmed forever.</p>
+        <p><span class="warn">Main remaining risk:</span> old global npm CLIs were removed when Node was force-reinstalled under mise. Reinstall only the CLIs that are still real workflows.</p>
+        <p><span class="ok">Tracker:</span> runtime migration lives in <code>dotfiles-stow-z13</code>. Keep final cleanup notes there instead of spreading transition state across chats.</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const storagePrefix = "dotfiles-runtime-transition:";
+
+    function updateCounts() {
+      const boxes = [...document.querySelectorAll("#checklist input")];
+      const done = boxes.filter((box) => box.checked).length;
+      document.querySelector("#done-count").textContent = done;
+      document.querySelector("#total-count").textContent = boxes.length;
+      boxes.forEach((box) => box.closest("label").classList.toggle("done", box.checked));
+    }
+
+    document.querySelectorAll("#checklist input").forEach((box) => {
+      const key = storagePrefix + box.dataset.key;
+      box.checked = localStorage.getItem(key) === "1";
+      box.addEventListener("change", () => {
+        localStorage.setItem(key, box.checked ? "1" : "0");
+        updateCounts();
+      });
+    });
+
+    document.querySelectorAll(".copy").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const target = document.getElementById(button.dataset.copy);
+        await navigator.clipboard.writeText(target.textContent.trim());
+        const old = button.textContent;
+        button.textContent = "copied";
+        setTimeout(() => {
+          button.textContent = old;
+        }, 900);
+      });
+    });
+
+    updateCounts();
+  </script>
+</body>
+</html>

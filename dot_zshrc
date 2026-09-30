@@ -51,15 +51,6 @@ elif [[ -f /usr/share/autojump/autojump.sh ]]; then
   source /usr/share/autojump/autojump.sh
 fi
 
-# Bun completions
-[[ -f "${HOME}/.bun/_bun" ]] && source "${HOME}/.bun/_bun"
-# Completion styling
-zstyle ':completion:*' menu select
-zstyle ':completion:*:descriptions' format '%F{yellow}%B── %d%b%f'
-zstyle ':completion:*:warnings' format '%F{red}no matches%f'
-zstyle ':completion:*' list-separator '  '
-zstyle ':completion:*' group-name ''
-
 # Eval shell init only when the generator succeeds and writes code to stdout.
 _eval_init() {
   local init_script
@@ -71,6 +62,7 @@ _eval_init() {
 # Load tv's own shell init first; the custom dispatcher below only changes completion candidates.
 _eval_init tv init zsh
 # Override upstream `_tv` to group flags and add dynamic channels from `tv list-channels`.
+if command -v tv >/dev/null 2>&1; then
 _tv_complete() {
   case $words[2] in
     -*)
@@ -104,8 +96,17 @@ _tv_complete() {
   esac
 }
 compdef _tv_complete tv
+fi
 unset -f _eval_init
 export CLAUDE_CODE_NO_FLICKER=1
+
+# Optional per-machine tool dirs: only added when present (see paths.zsh).
+[[ -d "$HOME/.kimi-code/bin" ]] && path=("$HOME/.kimi-code/bin" $path)
+# agentify (aglog, mcp-attach) — cross-machine Claude/Codex tooling
+[[ -d "$HOME/proj/agentify/bin" ]] && path=("$HOME/proj/agentify/bin" $path)
+
+# adpd (active developer's projects directory) — curated symlink view of ~/proj
+[[ -f "$HOME/proj/adpd/init.sh" ]] && source "$HOME/proj/adpd/init.sh"
 
 if [[ "$ZPROF" = true ]]; then
   echo "  ## Finished ZPROF"

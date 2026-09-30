@@ -1,5 +1,6 @@
 # Common environment configuration (non-secret).
 export EDITOR=hx
+export VISUAL=hx
 
 # Detect Homebrew prefix (macOS: /opt/homebrew, Linux: /home/linuxbrew/.linuxbrew)
 if [[ -z "${BREW_PREFIX:-}" ]]; then
@@ -32,10 +33,14 @@ if [[ "$(uname)" == "Linux" ]]; then
   mkdir -p "$TMPDIR" 2>/dev/null
 fi
 
-# Zsh cache/history locations
+# Zsh cache/history locations (HISTFILE set in ~/.zshenv for early read)
 export ZSH_CACHE_DIR="$XDG_CACHE_HOME/zsh"
+mkdir -p "$ZSH_CACHE_DIR" "$(dirname "${HISTFILE:-$XDG_STATE_HOME/zsh/history}")" >/dev/null 2>&1
+
+# Re-assert after /etc/zshrc (macOS defaults HISTSIZE=2000, HISTFILE=~/.zsh_history).
 export HISTFILE="${XDG_STATE_HOME}/zsh/history"
-mkdir -p "$ZSH_CACHE_DIR" "$(dirname "$HISTFILE")" >/dev/null 2>&1
+HISTSIZE=6969420
+SAVEHIST=6969420
 
 # Color/theme defaults
 # Cache LS_COLORS — only regenerate if vivid binary is newer than cache
@@ -45,12 +50,6 @@ if [[ ! -f "$_vivid_cache" || "$(command -v vivid)" -nt "$_vivid_cache" ]]; then
 fi
 [[ -f "$_vivid_cache" ]] && export LS_COLORS=$(<"$_vivid_cache")
 unset _vivid_cache
-
-# History settings
-# NOTE: HISTORY_SECRET should be set in local ~/.config/zsh/secrets.zsh
-# See dot_config/zsh/secrets.example.zsh for source reference.
-HISTSIZE=6969420
-SAVEHIST=6969420
 
 # Misc tool defaults (portability improved)
 [[ -n "${BREW_PREFIX:-}" ]] && export GSETTINGS_SCHEMA_DIR="${BREW_PREFIX}/share/glib-2.0/schemas"

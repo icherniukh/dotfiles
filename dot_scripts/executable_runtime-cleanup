@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# One-shot: migrate from Homebrew/legacy runtimes to mise.
+# Usage: runtime-cleanup
+set -euo pipefail
+
+ARCHIVE_DATE="$(date +%Y%m%d)"
+ARCHIVE_DIR="$HOME/.local/share/archive-runtimes-${ARCHIVE_DATE}"
+
+log() { printf '==> %s\n' "$*"; }
+
+run_audit() {
+  log "audit-runtimes ($1)"
+  audit-runtimes || true
+  echo
+}
+
+run_audit BEFORE
+
+for shim in "$HOME/.local/bin/qterm" "$HOME/.local/bin/"*"(qterm)"; do
+  [[ -e "$shim" || -L "$shim" ]] || continue
+  if [[ ! -e "$shim" ]]; then
+    log "Removing broken shim: $shim"
+    rm -f "$shim"
+  fi
+done
+
+BREW_FORMULAS=(node ruby pipx pnpm pyenv fnm)
+INSTALLED=()
+if command -v brew >/dev/null 2>&1; then
+  for f in "${BREW_FORMULAS[@]}"; do
+    brew list --formula 2>/dev/null | rg -qx "$f" && INSTALLED+=("$f")
+  done
+fi
+
+if [[ ${#INSTALLED[@]} -gt 0 ]]; then
+  log "Uninstalling Homebrew runtimes: ${INSTALLED[*]}"
+  brew uninstall "${INSTALLED[@]}" 2>&1 || {
+    for f in "${INSTALLED[@]}"; do
+      brew uninstall "$f" 2>&1 || log "WARN: failed to uninstall $f"
+    done
+  }
+else
+  log "No conflicting Homebrew runtime formulas installed"
+fi
+
+log "Running mise install..."
+mise install
+
+mkdir -p "$ARCHIVE_DIR"
+for dir in .pyenv .nvm .bun .bak_old_bun; do
+  src="$HOME/$dir"
+  [[ -d "$src" ]] || continue
+  dest="$ARCHIVE_DIR/$dir"
+  [[ -e "$dest" ]] && { log "SKIP (exists): $dest"; continue; }
+  log "Archiving $src -> $dest"
+  mv "$src" "$dest"
+done
+
+if command -v hk-dotfiles-secrets >/dev/null 2>&1; then
+  log "Running hk-dotfiles-secrets..."
+  hk-dotfiles-secrets || log "WARN: hk-dotfiles-secrets failed"
+fi
+
+run_audit AFTER
+log "Done. Archive: $ARCHIVE_DIR"

@@ -1,0 +1,13 @@
+[settings]
+color = true
+experimental = true
+
+[tools]
+hk = "1.51.0"   # pinned: hk.pkl + ~/.config/hk/config.pkl use the 1.51 schema; 2.x changed hooks/steps to listings
+bun = "1.3.14"
+"gem:colorls" = "latest"
+node = "24"
+python = "3.13"
+ruby = "3.4"
+rust = { version = "stable", profile = "minimal", components = "rustfmt,clippy" }
+uv = "latest"

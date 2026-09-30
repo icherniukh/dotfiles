@@ -7,6 +7,11 @@ zdharma-continuum/history-search-multi-word
 akash329d/zsh-alias-finder
 gretzky/auto-color-ls
 mfaerevaag/wd
+wfxr/forgit
 zsh-users/zsh-completions
 zsh-users/zsh-autosuggestions
+
+# Keep these last, in this order: syntax-highlighting wraps every widget defined
+# before it, and history-substring-search must load after syntax-highlighting.
 zsh-users/zsh-syntax-highlighting
+zsh-users/zsh-history-substring-search

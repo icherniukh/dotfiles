@@ -1,0 +1,306 @@
+#!/usr/bin/env bash
+# Hard-copy every recoverable shell history fragment before merge/recovery.
+set -euo pipefail
+
+exec python3 - "$@" <<'PY'
+import hashlib
+import json
+import os
+import re
+import shutil
+import sys
+from collections import defaultdict
+from datetime import datetime, timezone
+from pathlib import Path
+
+HOME = Path.home()
+NOW = datetime.now()
+ARCHIVE_NAME = f"zsh-history-archive-{NOW.strftime('%Y%m%d-%H%M%S')}"
+ARCHIVE_ROOT = HOME / ".local" / "share" / ARCHIVE_NAME
+
+EXPLICIT_PATHS = [
+    HOME / ".local/state/zsh/history",
+    HOME / ".local/state/zsh/history.zsh_history-fork-20260617",
+    HOME / ".local/state/zsh/.!33378!history",
+    HOME / ".zsh_history",
+    HOME / ".bash_history",
+    HOME / "proj/cli-configs/2025.personal.configs/home_zsh_history",
+    HOME / "repos/cli-configs/archive/2025-backups/home_zsh_history",
+    HOME / "repos/cli-configs/archive/history_defaults_write_dump.txt",
+    HOME / "proj/cli-configs/history_defaults_write_dump.txt",
+    HOME / "proj/cli-configs/2025.personal.configs/tmux/history",
+    HOME / "repos/cli-configs/config/terminal/tmux/history",
+    HOME / ".config/tmuxai/history",
+    HOME / "Library/Caches/kitty/shell.history.json",
+    HOME / ".local/share/atuin/history.db",
+    HOME / ".local/share/television/history.json",
+    HOME / ".local/share/television/frecency.json",
+    HOME / ".local/share/amp/history.jsonl",
+    HOME / ".codex/history.jsonl",
+    HOME / ".claude/history.jsonl",
+    HOME / ".backups/home-root-2026-05-03/.claude.backup/history.jsonl",
+]
+
+EXCLUDE_DIR_NAMES = {
+    "node_modules", ".git", ".npm", "__pycache__",
+}
+
+MONTHS = [
+    "2025-09", "2025-10", "2025-11", "2025-12",
+    "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06",
+]
+
+TS_LINE = re.compile(r"^: (\d{10}):")
+TS_JSON = re.compile(r'"ts":(\d{10})')
+TS_JSON_MS = re.compile(r'"timestamp":(\d{13})')
+
+
+def should_exclude(path: Path) -> bool:
+    return any(ex in path.parts for ex in EXCLUDE_DIR_NAMES)
+
+
+def discover_files() -> list[Path]:
+    found: set[Path] = set()
+    for p in EXPLICIT_PATHS:
+        if p.exists():
+            found.add(p.resolve())
+
+    zsh_state = HOME / ".local/state/zsh"
+    if zsh_state.is_dir():
+        for d in zsh_state.glob("backups-*"):
+            if d.is_dir():
+                for f in d.rglob("*"):
+                    if f.is_file():
+                        found.add(f.resolve())
+
+    sessions = HOME / ".zsh_sessions"
+    if sessions.is_dir():
+        for f in sessions.iterdir():
+            if f.is_file():
+                found.add(f.resolve())
+
+    gemini_tmp = HOME / ".gemini/tmp"
+    if gemini_tmp.is_dir():
+        for f in gemini_tmp.glob("*/shell_history"):
+            if f.is_file():
+                found.add(f.resolve())
+
+    for root in [HOME / ".local", HOME / ".config", HOME / "proj", HOME / "repos", HOME / ".gemini"]:
+        if not root.is_dir():
+            continue
+        for pat in ("*zsh*history*", "*shell_history*"):
+            try:
+                for f in root.rglob(pat):
+                    if f.is_file() and not should_exclude(f):
+                        found.add(f.resolve())
+            except (PermissionError, OSError):
+                pass
+
+    return sorted(found)
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as fp:
+        for chunk in iter(lambda: fp.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def line_count(path: Path) -> int:
+    with open(path, "rb") as fp:
+        return sum(1 for _ in fp)
+
+
+def backup_file(src: Path, archive_root: Path) -> dict:
+    try:
+        rel = src.relative_to(HOME)
+    except ValueError:
+        rel = Path("absolute") / src.as_posix().lstrip("/")
+
+    dest = archive_root / rel
+    dest.parent.mkdir(parents=True, exist_ok=True)
+
+    symlink_target = None
+    if src.is_symlink():
+        symlink_target = os.readlink(src)
+        real = src.resolve()
+        if real.is_file():
+            shutil.copy2(real, dest)
+        else:
+            dest.write_text(f"SYMLINK_TARGET={symlink_target}\n")
+    else:
+        shutil.copy2(src, dest)
+
+    stat = src.stat()
+    return {
+        "original": str(src),
+        "backup_relative": str(rel),
+        "lines": line_count(dest),
+        "sha256": sha256_file(dest),
+        "size": stat.st_size,
+        "mtime": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+        "is_symlink": src.is_symlink(),
+        "symlink_target": symlink_target,
+    }
+
+
+def parse_extended(text: str) -> list[int]:
+    return [int(m.group(1)) for m in map(TS_LINE.match, text.splitlines()) if m]
+
+
+def parse_codex_jsonl(text: str) -> list[int]:
+    out = []
+    for line in text.splitlines():
+        m = TS_JSON.search(line)
+        if m:
+            out.append(int(m.group(1)))
+    return out
+
+
+def parse_claude_jsonl(text: str) -> list[int]:
+    out = []
+    for line in text.splitlines():
+        try:
+            obj = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        ts = obj.get("timestamp")
+        if isinstance(ts, int) and ts > 1_000_000_000_000:
+            out.append(ts // 1000)
+    return out
+
+
+def parse_atuin(path: Path) -> list[int]:
+    try:
+        import sqlite3
+        conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+        cur = conn.cursor()
+        cur.execute("SELECT timestamp FROM history")
+        out = [int(r[0]) for r in cur.fetchall() if r[0]]
+        conn.close()
+        return out
+    except Exception as e:
+        print(f"  (atuin: {e})", file=sys.stderr)
+        return []
+
+
+def parse_television(path: Path) -> list[int]:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8", errors="replace"))
+    except Exception:
+        return []
+    out = []
+    if isinstance(data, list):
+        for item in data:
+            if isinstance(item, dict) and item.get("timestamp"):
+                out.append(int(item["timestamp"]))
+    elif isinstance(data, dict):
+        for entries in data.values():
+            if isinstance(entries, list):
+                for item in entries:
+                    if isinstance(item, dict) and item.get("last_access"):
+                        out.append(int(item["last_access"]))
+    return out
+
+
+def extract_epochs(path: Path) -> list[int]:
+    if path.name == "history.db":
+        return parse_atuin(path)
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return []
+    if path.name == "history.jsonl" and "codex" in path.parts:
+        return parse_codex_jsonl(text)
+    if path.name == "history.jsonl":
+        return parse_claude_jsonl(text)
+    if path.name.endswith(".json"):
+        return parse_television(path)
+    return parse_extended(text)
+
+
+def month_key(epoch: int) -> str:
+    return datetime.fromtimestamp(epoch, tz=timezone.utc).strftime("%Y-%m")
+
+
+def main() -> None:
+    ARCHIVE_ROOT.mkdir(parents=True, exist_ok=True)
+    files = discover_files()
+    manifest = []
+
+    print(f"Archive: {ARCHIVE_ROOT}")
+    print(f"Discovered {len(files)} files")
+
+    for src in files:
+        try:
+            manifest.append(backup_file(src, ARCHIVE_ROOT))
+            print(f"  OK {src}")
+        except Exception as e:
+            print(f"  FAIL {src}: {e}", file=sys.stderr)
+
+    manifest_path = ARCHIVE_ROOT / "MANIFEST.txt"
+    with manifest_path.open("w") as mf:
+        mf.write(f"# Zsh/Shell History Archive\n# Created: {NOW.isoformat()}\n# Files: {len(manifest)}\n\n")
+        mf.write("original_path\tbackup_relative\tlines\tsha256\tsize\tmtime\tsymlink\tsymlink_target\n")
+        for m in sorted(manifest, key=lambda x: x["backup_relative"]):
+            mf.write(
+                f"{m['original']}\t{m['backup_relative']}\t{m['lines']}\t{m['sha256']}\t"
+                f"{m['size']}\t{m['mtime']}\t{m['is_symlink']}\t{m.get('symlink_target') or ''}\n"
+            )
+
+    histogram = defaultdict(int)
+    month_sources = defaultdict(set)
+    per_source = {}
+
+    for entry in manifest:
+        backup = ARCHIVE_ROOT / entry["backup_relative"]
+        epochs = extract_epochs(backup)
+        months = defaultdict(int)
+        lo = hi = None
+        for ts in epochs:
+            mk = month_key(ts)
+            months[mk] += 1
+            histogram[mk] += 1
+            month_sources[mk].add(entry["backup_relative"])
+            lo = ts if lo is None or ts < lo else lo
+            hi = ts if hi is None or ts > hi else hi
+        per_source[entry["backup_relative"]] = {
+            "original": entry["original"],
+            "lines": entry["lines"],
+            "timestamped": len(epochs),
+            "min_date": datetime.fromtimestamp(lo, tz=timezone.utc).isoformat() if lo else None,
+            "max_date": datetime.fromtimestamp(hi, tz=timezone.utc).isoformat() if hi else None,
+            "months": dict(sorted(months.items())),
+        }
+
+    report = ARCHIVE_ROOT / "GAP_ANALYSIS.txt"
+    with report.open("w") as rf:
+        rf.write("GAP ANALYSIS Sep 2025 – Jun 2026\n\n")
+        rf.write("ZSH EXTENDED HISTORY (HISTFILE sources)\n")
+        for month in MONTHS:
+            zsh_count = sum(
+                c for src, info in per_source.items()
+                if "zsh/history" in info["original"] or info["original"].endswith(".zsh_history")
+                for m, c in info["months"].items() if m == month
+            )
+            rf.write(f"  {month} zsh-HISTFILE: {zsh_count}\n")
+        rf.write("\nALL SOURCES COMBINED\n")
+        for month in MONTHS:
+            rf.write(f"  {month}: {histogram.get(month, 0)} ({len(month_sources.get(month, []))} files)\n")
+            for s in month_sources.get(month, []):
+                rf.write(f"      {s}\n")
+        rf.write("\nPER-SOURCE\n")
+        for rel, info in sorted(per_source.items()):
+            rf.write(f"\n{info['original']}\n  ts={info['timestamped']}  {info['min_date']} -> {info['max_date']}\n")
+            for m, c in info.get("months", {}).items():
+                rf.write(f"    {m}: {c}\n")
+
+    print(f"\nManifest: {manifest_path}")
+    print(f"Gap analysis: {report}")
+    print(f"ARCHIVE_ROOT={ARCHIVE_ROOT}")
+
+
+if __name__ == "__main__":
+    main()
+PY

@@ -1,0 +1,44 @@
+/// Global hk config (~/.config/hk/config.pkl). Merged into every hk invocation.
+/// Heavy checks use the "slow" profile — enable with: hk run pre-push -p slow
+amends "package://github.com/jdx/hk/releases/download/v1.51.0/hk@1.51.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.51.0/hk@1.51.0#/Builtins.pkl"
+
+local global = new Mapping<String, Step> {
+  /// Bare npm/pip/pyenv/nvm/fnm/pipx vs mise+uv
+  ["audit_runtimes"] {
+    check = "audit-runtimes --hk"
+  }
+  /// Chezmoi drift when this machine is chezmoi-managed
+  ["chezmoi_verify"] {
+    profiles = List("slow")
+    check = "test -f \"$HOME/.config/chezmoi/chezmoi.toml\" && chezmoi verify"
+  }
+  /// mise health on the live machine
+  ["mise_doctor"] {
+    profiles = List("slow")
+    check = "command -v mise >/dev/null && mise doctor"
+  }
+  /// Private keys in staged text
+  ["detect_private_key"] = Builtins.detect_private_key
+}
+
+hooks {
+  ["pre-commit"] {
+    stash = "git"
+    steps = new Mapping<String, Step> {
+      ["detect_private_key"] = global["detect_private_key"]
+      ["audit_runtimes"] = global["audit_runtimes"]
+    }
+  }
+  ["pre-push"] {
+    steps = new Mapping<String, Step> {
+      ["detect_private_key"] = global["detect_private_key"]
+      ["audit_runtimes"] = global["audit_runtimes"]
+      ["chezmoi_verify"] = global["chezmoi_verify"]
+      ["mise_doctor"] = global["mise_doctor"]
+    }
+  }
+  ["check"] {
+    steps = global
+  }
+}
