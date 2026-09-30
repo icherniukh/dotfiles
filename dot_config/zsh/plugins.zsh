@@ -45,7 +45,11 @@ unset _zsh_plugins_src
 
 # 3. Load plugins first — some (forgit, wd, zsh-completions) add completions to fpath.
 #    Widget-heavy plugins need zle, so only load them when a real terminal is attached.
+#    Plugins that call compdef at load time (e.g. zsh-better-npm-completion) get a
+#    queue until compinit defines the real one.
+typeset -ga _zsh_deferred_compdefs
 if [[ -t 0 && -t 1 ]]; then
+  (( ${+functions[compdef]} )) || compdef() { _zsh_deferred_compdefs+=("${(pj:\0:)@}"); }
   [[ -f $zsh_plugins ]] && source $zsh_plugins
 
   ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#666666"
@@ -73,6 +77,7 @@ fi
 #    interactive shell. Rebuild the dump when it is missing, older than a day,
 #    or a generated completion changed; otherwise load it without the audit (-C).
 if [[ -o interactive ]]; then
+  (( ${#_zsh_deferred_compdefs} )) && unfunction compdef 2>/dev/null
   autoload -Uz compinit
   ZSH_COMPDUMP="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump-${ZSH_VERSION}"
   _zsh_stale_dump=("$ZSH_COMPDUMP"(N.mh+24))
@@ -84,9 +89,14 @@ if [[ -o interactive ]]; then
   fi
   unset ZSH_COMPDUMP _zsh_stale_dump
 
+  for _zsh_compdef_args in "${_zsh_deferred_compdefs[@]}"; do
+    compdef "${(@ps:\0:)_zsh_compdef_args}"
+  done
+  unset _zsh_compdef_args
+
   [[ -f "${ZSH_CONFIG_DIR}/completion.zsh" ]] && source "${ZSH_CONFIG_DIR}/completion.zsh"
 fi
-unset _zsh_completion_refresh
+unset _zsh_completion_refresh _zsh_deferred_compdefs
 
 command -v thefuck >/dev/null 2>&1 && fuck() { unfunction fuck; eval "$(command thefuck --alias fuck)"; fuck "$@"; }
 
