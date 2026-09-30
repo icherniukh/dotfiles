@@ -59,3 +59,25 @@ if rg -n "alias tmuxinator='tx'" "$aliases_file" >/dev/null; then
   echo "the tmuxinator alias direction is reversed" >&2
   exit 1
 fi
+
+if rg -n 'share/(zsh-autosuggestions|zsh-syntax-highlighting|zsh-history-substring-search|forgit)/' "$plugins_file" >/dev/null; then
+  echo "core zsh plugins load through antidote; do not also source Homebrew/distro copies" >&2
+  exit 1
+fi
+
+hl_line="$(rg -n '^zsh-users/zsh-syntax-highlighting$' "$plugin_list" | cut -d: -f1)"
+hss_line="$(rg -n '^zsh-users/zsh-history-substring-search$' "$plugin_list" | cut -d: -f1)"
+if [[ -z "$hl_line" || -z "$hss_line" ]] || (( hss_line < hl_line )); then
+  echo "zsh-history-substring-search must be listed after zsh-syntax-highlighting" >&2
+  exit 1
+fi
+
+if rg -n '^\s*(\.|source)\s+"?\$HOME/\.cargo/env' "$repo_root/dot_zshenv" >/dev/null; then
+  echo ".zshenv must not source ~/.cargo/env unconditionally" >&2
+  exit 1
+fi
+
+if ! rg -n 'mise activate zsh' "$paths_file" >/dev/null; then
+  echo "paths.zsh should activate mise when it is installed" >&2
+  exit 1
+fi

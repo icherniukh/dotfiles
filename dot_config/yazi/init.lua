@@ -52,16 +52,22 @@ local bookmarks = {
 		key = "h",
 	},
 	{
-		tag = "Repos",
-		path = home_path .. path_sep .. "repos" .. path_sep,
-		key = "p",
-	},
-	{
 		tag = "Config",
 		path = home_path .. path_sep .. ".config" .. path_sep,
 		key = "c",
 	},
 }
+
+-- Projects live in ~/proj on the Mac and ~/repos on remote hosts; bookmark whichever exist.
+local function add_if_dir(tag, name, key)
+	local dir = home_path .. path_sep .. name .. path_sep
+	if io.open(dir, "r") then
+		table.insert(bookmarks, { tag = tag, path = dir, key = key })
+	end
+end
+add_if_dir("Projects", "proj", "p")
+add_if_dir("Repos", "repos", "r")
+add_if_dir("Downloads", "Downloads", "d")
 
 require("yamb"):setup {
 	bookmarks = bookmarks,

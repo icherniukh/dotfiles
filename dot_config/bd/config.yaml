@@ -1,4 +1,6 @@
 # Shared defaults for repositories using bd (Beads).
+# Stealth mode: bd performs no git operations (commits, pushes) on its own.
+no-git-ops: true
 dolt.auto-commit: "on"
 dolt.auto-push: false
 

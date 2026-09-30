@@ -29,7 +29,7 @@ check_prompt_lines() {
       | strip_prompt_escapes
   )"
 
-  mapfile -t lines <<<"$rendered"
+  while IFS= read -r line; do lines+=("$line"); done <<<"$rendered"
   if (( ${#lines[@]} < 2 )); then
     echo "$name: expected a multiline prompt, got ${#lines[@]} line(s)" >&2
     return 1
@@ -48,7 +48,10 @@ check_prompt_lines() {
   done
 }
 
-chezmoi execute-template --file "$repo_root/dot_config/starship.toml.tmpl" >"$tmpdir/starship.toml"
+# Only the non-macOS branch of the template has a custom layout; the macOS branch
+# is starship's default prompt. Render it as Linux so the check runs on any host.
+chezmoi execute-template --override-data '{"chezmoi":{"os":"linux"}}' \
+  --file "$repo_root/dot_config/starship.toml.tmpl" >"$tmpdir/starship.toml"
 
 check_prompt_lines "starship.toml.tmpl" "$tmpdir/starship.toml"
 check_prompt_lines "starship-remote.toml" "$repo_root/dot_config/starship-remote.toml"
