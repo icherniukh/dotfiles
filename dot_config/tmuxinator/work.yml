@@ -7,7 +7,7 @@ pre_window: tmux set-window-option automatic-rename off
 # One full-screen window per project keeps this comfortable on narrow clients.
 windows:
   - 1.telegram:
-      root: ~/repos/telegram-llm-dev
+      root: ~/repos/telegram-llm
   - 2.dev:
   - 3.configs:
       root: ~/.config

@@ -105,6 +105,6 @@ if [[ -t 0 && -t 1 ]]; then
     source ${BREW_PREFIX}/share/forgit/forgit.plugin.zsh
 fi
 
-command -v thefuck >/dev/null 2>&1 && thefuck() { unfunction thefuck; eval $(command thefuck --alias); thefuck "$@"; }
+command -v thefuck >/dev/null 2>&1 && fuck() { unfunction fuck; eval "$(command thefuck --alias fuck)"; fuck "$@"; }
 
 [[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"

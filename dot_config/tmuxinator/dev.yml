@@ -1,5 +1,5 @@
 name: dev
-root: ~/repos/telegram-llm-dev
+root: ~/repos/telegram-llm
 
 startup_window: editor
 
