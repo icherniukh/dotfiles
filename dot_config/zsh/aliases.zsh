@@ -146,8 +146,9 @@ local os_aliases="${ZSH_CONFIG_DIR}/aliases.$(uname | tr '[:upper:]' '[:lower:]'
 # Fuzzy-select Github PR to checkout
 alias gh-prcheckout='gh pr list | fzf | awk '\''{print }'\'' | xargs gh pr checkout'
 
-# Codex, duh
-alias cx='codex'
+# Codex through the Turbocharging shim, which applies the repo's capability profile.
+# Plain `codex` stays available for unprofiled launches.
+alias cx="$HOME/.local/bin/cx"
 
 # exiftool ALL
 alias xif='exiftool -a -u -g -ee -api largefilechunks=1'
