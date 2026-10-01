@@ -4,11 +4,11 @@ no-git-ops: true
 dolt.auto-commit: "on"
 dolt.auto-push: false
 
-# Keep the tracked JSONL fallback current and include it with the next commit.
+# Keep the JSONL fallback current; committing it is left to you (no-git-ops).
 export.auto: true
 export.path: issues.jsonl
 export.interval: 60s
-export.git-add: true
+export.git-add: false   # stealth: never stage files on bd's own
 
 # Preserve the local metrics-consent state managed by bd.
 metrics:

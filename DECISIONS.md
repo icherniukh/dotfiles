@@ -49,7 +49,7 @@ Each entry contains:
 
 ### ADR-004: tmux Config Under Chezmoi, Lean Plugin Set
 - **Date**: 2026-09-22
-- **Status**: Superseded by ADR-005 (theme, plugin set, tpm source); mouse/scroll behaviour kept
+- **Status**: Superseded in part by ADR-005 (plugin set, tpm source); ukiyo theme and mouse/scroll behaviour kept on macOS
 - **Context**: `~/.config/tmux/tmux.conf` was not managed by chezmoi. It loaded 12 plugins (dracula, treemux, sidebar, menus, fzf, which-key, pain-control…), and wheel scrolling and mouse selection didn't behave like a plain terminal.
 - **Decision**:
   - `dot_config/tmux/tmux.conf` is the only tracked tmux file. Plugins install into `~/.config/tmux/plugins` via Homebrew TPM (`/opt/homebrew/opt/tpm`) and stay untracked; missing plugins are installed on first server start.
@@ -66,8 +66,9 @@ Each entry contains:
   - PATH: upstream's managed/exists-only rebuild. Runtimes: `mise activate` when mise exists; pyenv/fnm/ruby-gem/bun setup only as a fallback on hosts without mise.
   - Plugins: antidote owns autosuggestions, syntax-highlighting, history-substring-search and forgit on every OS (no Homebrew/distro double source). Keeps upstream's `fzf-zsh-plugin`, `zsh-completions`, npm completion; `fzf.zsh` is sourced once (by the plugin when present).
   - Completion: plugins load only with a TTY; compinit runs after them in every interactive shell, full rebuild when the dump is missing, older than 24h or `bd` completion was regenerated, then `zcompile`; otherwise `compinit -C`.
-  - tmux: upstream's Moshi-aware graphite/apricot theme (status-left carries the essentials, bar on top), extrakto, which-key, tpm from `.chezmoiexternal.toml`. Added from ADR-004: terminal-like wheel/drag-copy, vi copy keys, pane nav/resize, ghostty terminal features, `pbcopy` when available, `@continuum-restore off` on macOS. tmux-ukiyo dropped: it rewrites the status line Moshi depends on.
-  - Beads: repo config keeps both `sync.remote` and `no-git-ops: true`; global `~/.config/bd/config.yaml` adds `no-git-ops: true` to upstream's defaults.
+  - tmux: upstream's Moshi-aware graphite/apricot theme (status-left carries the essentials, bar on top), extrakto, which-key, tpm from `.chezmoiexternal.toml`. Added from ADR-004: terminal-like wheel/drag-copy, vi copy keys, pane nav/resize, ghostty terminal features, `pbcopy` when available, `@continuum-restore off` on macOS. tmux-ukiyo dropped on remote hosts (it rewrites the status line Moshi depends on) but kept on macOS: `tmux.conf.tmpl` renders ukiyo (kanagawa/wave, bar at the bottom) on darwin and the graphite/apricot theme elsewhere.
+  - Beads: repo config keeps both `sync.remote` and `no-git-ops: true`; global `~/.config/bd/config.yaml` adds `no-git-ops: true` to upstream's defaults and sets `export.git-add: false` so bd never stages files itself.
+  - `tmuxinator/ops.yml` (systemctl/journalctl) is deployed only on Linux.
   - Yazi bookmarks: `~/proj`, `~/repos`, `~/Downloads` added only when they exist.
   - Tests: upstream's `tests/` kept, made bash-3.2 safe, and extended with checks for the local invariants above.
 - **Consequences**: One config for Mac and remote hosts. The Linux side of the templates was not exercised on this machine. On first apply, chezmoi starts managing `~/.claude/statusline.sh`, `~/.config/bd/config.yaml`, `~/.config/tmuxinator/` and clones tpm into `~/.config/tmux/plugins/tpm`; the Homebrew tpm path is no longer used.

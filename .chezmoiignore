@@ -17,4 +17,6 @@ hk.pkl
 
 {{ if ne .chezmoi.os "linux" }}
 **/*.linux.zsh
+# systemd/journalctl layout for the VPS service
+.config/tmuxinator/ops.yml
 {{ end }}

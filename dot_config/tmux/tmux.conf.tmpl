@@ -92,6 +92,7 @@ bind -T copy-mode-vi C-v send -X rectangle-toggle
 bind -T copy-mode-vi y send -X copy-pipe-and-cancel
 bind -T copy-mode-vi Escape send -X cancel
 
+{{ if ne .chezmoi.os "darwin" -}}
 # --- Theme: neutral graphite + apricot --------------------------------------
 # Tuned for the client theme (bg #1e1e1e, fg #d6d8e0): the bar is a lighter
 # neutral strip so it stands apart from pane content and from app status lines.
@@ -152,6 +153,20 @@ setw -g clock-mode-colour "#f2b36e"
 # setw -g pane-colours[13] "#dcaee0"
 # setw -g pane-colours[14] "#a6e6d3"
 # setw -g pane-colours[15] "#ece8e0"  # bright white
+{{- else }}
+# --- Theme (macOS): tmux-ukiyo, kanagawa/wave to match yazi -------------------
+# The graphite/apricot theme above is for remote hosts reached from the phone.
+# Other ukiyo themes: kanagawa/dragon, catppuccin/mocha, tokyonight/moon,
+# rose-pine/main, gruvbox/dark (or pick live with prefix T).
+set -g @ukiyo-theme "kanagawa/wave"
+set -g @ukiyo-plugins "git time"
+set -g @ukiyo-show-powerline false
+set -g @ukiyo-left-icon session          # turns red while the prefix is active
+set -g @ukiyo-show-flags true
+set -g @ukiyo-show-timezone false
+set -g @ukiyo-time-format "%H:%M"
+set -g @ukiyo-refresh-rate 5
+{{- end }}
 
 # --- Plugins (tpm: prefix I install, prefix U update) -----------------------
 # tpm itself comes from .chezmoiexternal.toml; plugins install next to it (untracked).
@@ -161,15 +176,22 @@ set -g @plugin 'tmux-plugins/tmux-resurrect'   # prefix C-s save, C-r restore
 set -g @plugin 'tmux-plugins/tmux-continuum'   # autosave every 15m, restore on start
 set -g @plugin 'laktak/extrakto'               # prefix Tab: fuzzy-pick text/paths/urls from pane
 set -g @plugin 'alexwforsythe/tmux-which-key'  # prefix Space: menu of all keys
+{{- if eq .chezmoi.os "darwin" }}
+set -g @plugin 'Nybkox/tmux-ukiyo'             # status bar themes; prefix T switches
+{{- end }}
 set -g @resurrect-capture-pane-contents 'on'
+{{- if eq .chezmoi.os "darwin" }}
+set -g @continuum-restore 'off'                # Mac: restore by hand with prefix C-r
+{{- else }}
 set -g @continuum-restore 'on'
-# On the Mac, restore by hand (prefix C-r) instead of on every server start.
-if-shell '[ "$(uname)" = Darwin ]' "set -g @continuum-restore 'off'"
+{{- end }}
 set -g @extrakto_clip_tool_run 'tmux_osc52'    # copy goes to phone/desktop via OSC 52
+{{- if ne .chezmoi.os "darwin" }}
 # continuum hooks its autosave into status-right, which Moshi blanks; run it from the left too
 set -ga status-left "#(~/.config/tmux/plugins/tmux-continuum/scripts/continuum_save.sh)"
+{{- end }}
 # Install missing plugins on first start, then load tpm
-if "test -x ~/.config/tmux/plugins/tpm/bin/install_plugins -a ! -d ~/.config/tmux/plugins/tmux-resurrect" \
+if "test -x ~/.config/tmux/plugins/tpm/bin/install_plugins -a ! -d ~/.config/tmux/plugins/tmux-which-key" \
   "run '~/.config/tmux/plugins/tpm/bin/install_plugins'"
 run '~/.config/tmux/plugins/tpm/tpm'
 
