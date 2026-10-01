@@ -195,5 +195,4 @@ if "test -x ~/.config/tmux/plugins/tpm/bin/install_plugins -a ! -d ~/.config/tmu
   "run '~/.config/tmux/plugins/tpm/bin/install_plugins'"
 run '~/.config/tmux/plugins/tpm/tpm'
 
-# Alt-Space opens which-key without the prefix (easier on a phone keyboard)
-bind -n M-Space show-wk-menu-root
+# which-key: prefix Space (bound by the plugin). No Alt-Space: macOS/launchers grab it.
