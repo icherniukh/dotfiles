@@ -56,9 +56,9 @@ local dotfiles = new Mapping<String, Step> {
     profiles = List("slow")
     check = "command -v mise >/dev/null && mise doctor"
   }
-  /// Chezmoi source matches deployed dotfiles
+  /// Chezmoi source matches deployed dotfiles (run_ scripts always count as pending, so skip them)
   ["chezmoi_verify"] {
-    check = "command -v chezmoi >/dev/null && chezmoi verify"
+    check = "command -v chezmoi >/dev/null && chezmoi verify --exclude=scripts"
   }
 }
 
