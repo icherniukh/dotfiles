@@ -100,20 +100,21 @@ bind -T copy-mode-vi Escape send -X cancel
 set -g status-position top    # stays visible when the phone keyboard opens
 set -g status-justify left
 set -g status-style "bg=#2b2b2b,fg=#a3a5ad"
-set -g status-left-length 40
-set -g status-right-length 60
+set -g status-left-length 8
+set -g status-right-length 2
 # Moshi (iOS client) runs `set -g status-right ''` on attach, so everything
 # essential lives on the left; the right side is desktop-only extras.
-# [s:name]: apricot while prefix is held, seafoam in copy mode
-set -g status-left "#{?client_prefix,#[fg=#f2b36e bold],#{?pane_in_mode,#[fg=#86d4bd],#[fg=#7c7e86]}}[s:#S]#[default] "
-set -g status-right "#[fg=#7c7e86]%H:%M #h"
+# [sN]: current window; apricot while prefix is held, seafoam in copy mode
+set -g status-left "#{?client_prefix,#[fg=#f2b36e bold],#{?pane_in_mode,#[fg=#86d4bd],#[fg=#7c7e86]}}[s#I]#[default] "
+run-shell 'host_id=$({ hostname -f 2>/dev/null || hostname; } | cksum); host_id=${host_id%% *}; host_colour=$(python3 -c "import colorsys; print(\"#%02x%02x%02x\" % tuple(round(v * 255) for v in colorsys.hsv_to_rgb(($host_id % 360) / 360, .7, .8)))"); tmux set-option -g @host_colour "$host_colour"'
+set -g status-right "#[bg=#{@host_colour}]  #[default]"
 
 # Tabs: one colour per tab, the state tints both the block and the text.
 #   normal   #383838 / #a3a5ad   current #4d3d2c / #f2b36e (bold)
 #   activity #2f3d39 / #86d4bd   bell    #4a312e / #ff938a
 setw -g window-status-separator " "
-setw -g window-status-format "#{?window_bell_flag,#[bg=#4a312e fg=#ff938a],#{?window_activity_flag,#[bg=#2f3d39 fg=#86d4bd],#[bg=#383838 fg=#a3a5ad]}} #I.#W#{?window_zoomed_flag, Z,} "
-setw -g window-status-current-format "#[bg=#4d3d2c,fg=#f2b36e,bold] #I.#W#{?window_zoomed_flag, Z,} "
+setw -g window-status-format "#{?window_bell_flag,#[bg=#4a312e fg=#ff938a],#{?window_activity_flag,#[bg=#2f3d39 fg=#86d4bd],#[bg=#383838 fg=#a3a5ad]}} #{?window_name,#W,#I}#{?window_zoomed_flag, Z,} "
+setw -g window-status-current-format "#[bg=#4d3d2c,fg=#f2b36e,bold] #{?window_name,#W,#I}#{?window_zoomed_flag, Z,} "
 setw -g window-status-activity-style "none"
 setw -g window-status-bell-style "none"
 setw -g monitor-activity on
