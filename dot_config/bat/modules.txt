@@ -1,0 +1,22 @@
+# bat-modules configuration
+# Run: bat-modules --update && bat cache --build
+#
+# Format:
+#   syntax github:USER/REPO
+#   theme  github:USER/REPO
+#       checkout BRANCH   (optional, defaults to master)
+
+# ── Themes ──────────────────────────────────────────────────────────────────
+
+# Catppuccin (Mocha / Macchiato / Frappe / Latte)
+theme github:catppuccin/bat
+    checkout main
+
+# Kanagawa
+theme github:obergodmar/kanagawa-tmTheme
+
+# ── Syntaxes ─────────────────────────────────────────────────────────────────
+
+# Colorize --help output (great for bat cache --build pipelines)
+syntax github:victor-gp/cmd-help-sublime-syntax
+    checkout main
