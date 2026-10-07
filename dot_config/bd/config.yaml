@@ -1,17 +1,11 @@
-# Shared defaults for repositories using bd (Beads).
-# Stealth mode: bd performs no git operations (commits, pushes) on its own.
-no-git-ops: true
 dolt.auto-commit: "on"
 dolt.auto-push: false
-
-# Keep the JSONL fallback current; committing it is left to you (no-git-ops).
 export.auto: true
-export.path: issues.jsonl
+export.git-add: false
 export.interval: 60s
-export.git-add: false   # stealth: never stage files on bd's own
-
-# Preserve the local metrics-consent state managed by bd.
+export.path: issues.jsonl
 metrics:
-  disabled: false
-  endpoint: https://gastownhall-eventsapi.com/mp/collect
-  notice_shown: true
+    disabled: false
+    endpoint: https://gastownhall-eventsapi.com/mp/collect
+    notice_shown: true
+no-git-ops: true
