@@ -1,3 +1,4 @@
 federation.remote: git+https://github.com/icherniukh/dotfiles
 no-git-ops: true
-sync.remote: git+https://github.com/icherniukh/dotfiles
+sync:
+    remote: "git+https://github.com/icherniukh/dotfiles"
