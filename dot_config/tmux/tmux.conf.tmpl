@@ -92,8 +92,11 @@ bind -T copy-mode-vi C-v send -X rectangle-toggle
 bind -T copy-mode-vi y send -X copy-pipe-and-cancel
 bind -T copy-mode-vi Escape send -X cancel
 
-{{ if ne .chezmoi.os "darwin" -}}
-# --- Theme: neutral graphite + apricot --------------------------------------
+# Activity tracking (theme-independent)
+setw -g monitor-activity on
+set -g visual-activity off
+
+# --- Theme: neutral graphite + apricot (every host) -------------------------
 # Tuned for the client theme (bg #1e1e1e, fg #d6d8e0): the bar is a lighter
 # neutral strip so it stands apart from pane content and from app status lines.
 # strip #2b2b2b  muted #7c7e86  text #a3a5ad  apricot #f2b36e  seafoam #86d4bd  coral #ff938a
@@ -104,8 +107,8 @@ set -g status-left-length 8
 set -g status-right-length 2
 # Moshi (iOS client) runs `set -g status-right ''` on attach, so everything
 # essential lives on the left; the right side is desktop-only extras.
-# [sN]: current window; apricot while prefix is held, seafoam in copy mode
-set -g status-left "#{?client_prefix,#[fg=#f2b36e bold],#{?pane_in_mode,#[fg=#86d4bd],#[fg=#7c7e86]}}[s#I]#[default] "
+# [sN]: current window; apricot while prefix is held, seafoam in copy mode, plain text otherwise
+set -g status-left "#{?client_prefix,#[fg=#f2b36e bold],#{?pane_in_mode,#[fg=#86d4bd],#[fg=#a3a5ad]}}[s#I]#[default] "
 run-shell 'host_id=$({ hostname -f 2>/dev/null || hostname; } | cksum); host_id=${host_id%% *}; host_colour=$(python3 -c "import colorsys; print(\"#%02x%02x%02x\" % tuple(round(v * 255) for v in colorsys.hsv_to_rgb(($host_id % 360) / 360, .7, .8)))"); tmux set-option -g @host_colour "$host_colour"'
 set -g status-right "#[bg=#{@host_colour}]  #[default]"
 
@@ -117,8 +120,6 @@ setw -g window-status-format "#{?window_bell_flag,#[bg=#4a312e fg=#ff938a],#{?wi
 setw -g window-status-current-format "#[bg=#4d3d2c,fg=#f2b36e,bold] #{?window_name,#W,#I}#{?window_zoomed_flag, Z,} "
 setw -g window-status-activity-style "none"
 setw -g window-status-bell-style "none"
-setw -g monitor-activity on
-set -g visual-activity off
 
 setw -g pane-border-style "fg=#3a3a3a"
 setw -g pane-active-border-style "fg=#f2b36e"
@@ -154,20 +155,6 @@ setw -g clock-mode-colour "#f2b36e"
 # setw -g pane-colours[13] "#dcaee0"
 # setw -g pane-colours[14] "#a6e6d3"
 # setw -g pane-colours[15] "#ece8e0"  # bright white
-{{- else }}
-# --- Theme (macOS): tmux-ukiyo, kanagawa/wave to match yazi -------------------
-# The graphite/apricot theme above is for remote hosts reached from the phone.
-# Other ukiyo themes: kanagawa/dragon, catppuccin/mocha, tokyonight/moon,
-# rose-pine/main, gruvbox/dark (or pick live with prefix T).
-set -g @ukiyo-theme "kanagawa/wave"
-set -g @ukiyo-plugins "git time"
-set -g @ukiyo-show-powerline false
-set -g @ukiyo-left-icon session          # turns red while the prefix is active
-set -g @ukiyo-show-flags true
-set -g @ukiyo-show-timezone false
-set -g @ukiyo-time-format "%H:%M"
-set -g @ukiyo-refresh-rate 5
-{{- end }}
 
 # --- Plugins (tpm: prefix I install, prefix U update) -----------------------
 # tpm itself comes from .chezmoiexternal.toml; plugins install next to it (untracked).
@@ -177,9 +164,6 @@ set -g @plugin 'tmux-plugins/tmux-resurrect'   # prefix C-s save, C-r restore
 set -g @plugin 'tmux-plugins/tmux-continuum'   # autosave every 15m, restore on start
 set -g @plugin 'laktak/extrakto'               # prefix Tab: fuzzy-pick text/paths/urls from pane
 set -g @plugin 'alexwforsythe/tmux-which-key'  # prefix Space: menu of all keys
-{{- if eq .chezmoi.os "darwin" }}
-set -g @plugin 'Nybkox/tmux-ukiyo'             # status bar themes; prefix T switches
-{{- end }}
 set -g @resurrect-capture-pane-contents 'on'
 {{- if eq .chezmoi.os "darwin" }}
 set -g @continuum-restore 'off'                # Mac: restore by hand with prefix C-r
@@ -196,4 +180,10 @@ if "test -x ~/.config/tmux/plugins/tpm/bin/install_plugins -a ! -d ~/.config/tmu
   "run '~/.config/tmux/plugins/tpm/bin/install_plugins'"
 run '~/.config/tmux/plugins/tpm/tpm'
 
-# which-key: prefix Space (bound by the plugin). No Alt-Space: macOS/launchers grab it.
+# which-key: prefix Space (bound by the plugin).
+{{- if ne .chezmoi.os "darwin" }}
+# Alt-Space opens which-key without the prefix (easier on a phone keyboard)
+bind -n M-Space show-wk-menu-root
+{{- else }}
+# No Alt-Space on macOS: launchers grab it.
+{{- end }}

@@ -49,7 +49,7 @@ Each entry contains:
 
 ### ADR-004: tmux Config Under Chezmoi, Lean Plugin Set
 - **Date**: 2026-09-22
-- **Status**: Superseded in part by ADR-005 (plugin set, tpm source); ukiyo theme and mouse/scroll behaviour kept on macOS
+- **Status**: Superseded in part by ADR-005 (plugin set, tpm source); mouse/scroll behaviour kept; ukiyo later dropped everywhere (ADR-005)
 - **Context**: `~/.config/tmux/tmux.conf` was not managed by chezmoi. It loaded 12 plugins (dracula, treemux, sidebar, menus, fzf, which-key, pain-control…), and wheel scrolling and mouse selection didn't behave like a plain terminal.
 - **Decision**:
   - `dot_config/tmux/tmux.conf` is the only tracked tmux file. Plugins install into `~/.config/tmux/plugins` via Homebrew TPM (`/opt/homebrew/opt/tpm`) and stay untracked; missing plugins are installed on first server start.
@@ -69,6 +69,8 @@ Each entry contains:
   - tmux: upstream's Moshi-aware graphite/apricot theme (status-left carries the essentials, bar on top), extrakto, which-key, tpm from `.chezmoiexternal.toml`. Added from ADR-004: terminal-like wheel/drag-copy, vi copy keys, pane nav/resize, ghostty terminal features, `pbcopy` when available, `@continuum-restore off` on macOS. tmux-ukiyo dropped on remote hosts (it rewrites the status line Moshi depends on) but kept on macOS: `tmux.conf.tmpl` renders ukiyo (kanagawa/wave, bar at the bottom) on darwin and the graphite/apricot theme elsewhere.
   - Beads: repo config keeps both `sync.remote` and `no-git-ops: true`; global `~/.config/bd/config.yaml` adds `no-git-ops: true` to upstream's defaults and sets `export.git-add: false` so bd never stages files itself.
   - `tmuxinator/ops.yml` (systemctl/journalctl) is deployed only on Linux.
+  - macOS theme (2026-10-01): tmux-ukiyo dropped on macOS too; every host renders graphite/apricot with the bar on top. kanagawa/wave was too low-contrast: session block 3.6:1, window flags 1.9:1, bar 1.16:1 against the panes. The idle `[sN]` colour went from muted #7c7e86 (3.5:1) to text #a3a5ad (5.8:1).
+  - Status bar (2026-10-06): upstream's compact `[sN]` left / host-colour swatch right kept; a per-host Nerd Font icon on the left was tried and dropped. Restored from upstream: `M-Space` which-key on non-macOS, `monitor-activity on`/`visual-activity off` on every OS. tmux-ukiyo's prefix-T menu saves choices to `plugins/tmux-ukiyo/data/.tmux-ukiyo-state`, which overrides `tmux.conf`; a stale `dracula/classic` entry there is why kanagawa never showed after the merge.
   - Yazi bookmarks: `~/proj`, `~/repos`, `~/Downloads` added only when they exist.
   - Tests: upstream's `tests/` kept, made bash-3.2 safe, and extended with checks for the local invariants above.
 - **Consequences**: One config for Mac and remote hosts. The Linux side of the templates was not exercised on this machine. On first apply, chezmoi starts managing `~/.claude/statusline.sh`, `~/.config/bd/config.yaml`, `~/.config/tmuxinator/` and clones tpm into `~/.config/tmux/plugins/tpm`; the Homebrew tpm path is no longer used.
