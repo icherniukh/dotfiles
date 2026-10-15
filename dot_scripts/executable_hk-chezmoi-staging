@@ -15,10 +15,20 @@ stage_file() {
   cp -a "$src" "$dest"
 }
 
+# Gitignored files (e.g. secrets.zsh) never reach git, so they are not leaks.
+declare -A ignored=()
+while IFS= read -r -d '' rel; do
+  ignored["$ROOT/$rel"]=1
+done < <(git -C "$ROOT" ls-files -z --others --ignored --exclude-standard 2>/dev/null)
+
+# Mirrors the gitleaks step's exclude list in hk.pkl: gitleaks scans with
+# --source ., so the step's own glob filter never narrows what it reads.
 while IFS= read -r -d '' path; do
+  [[ -n "${ignored[$path]:-}" ]] && continue
   case "$path" in
     */.git/*|*/.beads/*|*/.claude/*) continue ;;
     *.png|*.jpg|*.gif|*.svg|*.zwc) continue ;;
+    *.md|*.example.*|*/secrets.example*|*/yazi/plugins/*) continue ;;
   esac
   stage_file "$path"
 done < <(find "$ROOT" \( \

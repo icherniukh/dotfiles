@@ -104,6 +104,7 @@ for pkgmgr in pnpm yarn bun; do
   fi
   case "$pm_path" in
     /opt/homebrew/*|/usr/local/*) log_warn "$pkgmgr is Homebrew-owned: $pm_path" ;;
+    /usr/bin/*) log_warn "$pkgmgr is system-owned (e.g. corepack): $pm_path" ;;
     *) log_fail "$pkgmgr is not mise-owned: $pm_path" ;;
   esac
 done

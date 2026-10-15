@@ -12,6 +12,9 @@ fi
 [[ -f "${ZSH_CONFIG_DIR}/options.zsh" ]] && source "${ZSH_CONFIG_DIR}/options.zsh"
 
 # Plugins/prompt
+# Keep hook arrays unique so `source ~/.zshrc` doesn't re-register hooks
+# (e.g. auto-color-ls listing the directory twice on cd).
+typeset -gU chpwd_functions precmd_functions preexec_functions
 [[ -f "${ZSH_CONFIG_DIR}/plugins.zsh" ]] && source "${ZSH_CONFIG_DIR}/plugins.zsh"
 [[ -f "${ZSH_CONFIG_DIR}/prompt.zsh" ]] && source "${ZSH_CONFIG_DIR}/prompt.zsh"
 

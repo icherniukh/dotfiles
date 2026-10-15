@@ -73,7 +73,7 @@ require("yamb"):setup {
 	bookmarks = bookmarks,
 	jump_notify = true,
 	cli = "fzf",
-	keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+	keys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", -- gitleaks:allow (key alphabet)
 	path = home_path .. path_sep .. ".config" .. path_sep .. "yazi" .. path_sep .. "bookmark",
 }
 

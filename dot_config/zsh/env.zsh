@@ -64,8 +64,19 @@ if [[ -n "${SSH_CONNECTION:-}" ]]; then
   export BAT_THEME="${BAT_THEME:-Monokai Extended Bright}"
 fi
 
+# Moshi (phone) launches `mosh-server new ... -l MOSHI_CLIENT=1`, but mosh-server
+# only applies -l vars as a locale fallback when the env isn't UTF-8, so the flag
+# usually never arrives. Recover it from the parent's command line; tmux carries
+# it into the session (update-environment) for the phone prompt and statusline.
+if [[ -z "${MOSHI_CLIENT:-}" && -n "${SSH_CONNECTION:-}" && -z "${TMUX:-}" ]] \
+  && [[ "$(ps -o args= -p $PPID 2>/dev/null)" == *mosh-server*MOSHI_CLIENT=1* ]]; then
+  export MOSHI_CLIENT=1
+fi
+
 # Helix can be installed as a standalone binary without its runtime bundle.
 # Prefer an explicit runtime directory only when it contains the full assets.
+# Drop a value inherited from a parent shell if that directory has since vanished.
+[[ -n "${HELIX_RUNTIME:-}" && ! -d "$HELIX_RUNTIME" ]] && unset HELIX_RUNTIME
 if [[ -z "${HELIX_RUNTIME:-}" ]]; then
   _helix_runtime_candidates=(
     "/snap/helix/current/bin/runtime"

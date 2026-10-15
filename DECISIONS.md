@@ -72,3 +72,15 @@ Each entry contains:
   - Yazi bookmarks: `~/proj`, `~/repos`, `~/Downloads` added only when they exist.
   - Tests: upstream's `tests/` kept, made bash-3.2 safe, and extended with checks for the local invariants above.
 - **Consequences**: One config for Mac and remote hosts. The Linux side of the templates was not exercised on this machine. On first apply, chezmoi starts managing `~/.claude/statusline.sh`, `~/.config/bd/config.yaml`, `~/.config/tmuxinator/` and clones tpm into `~/.config/tmux/plugins/tpm`; the Homebrew tpm path is no longer used.
+
+### ADR-006: First Full Apply on the VPS After the ADR-005 Merge
+- **Date**: 2026-10-15
+- **Status**: Accepted
+- **Context**: The VPS hadn't run a full `chezmoi apply` since the merge in ADR-005. About 60 targets had drifted. Most were simply behind the repo, a few had live edits, and the live mise config pinned host-only tools (beads, helix, herdr, yazi) that the shared config drops.
+- **Decision**:
+  - Host-only mise tools go in `~/.config/mise/conf.d/host.toml` (untracked); the managed `config.toml` stays shared across machines.
+  - Live-only edits carried into the source: the stale-`HELIX_RUNTIME` guard (`env.zsh`), `bat=batcat` (new `aliases.linux.zsh`), the Obsidian CLI path (`paths.darwin.zsh`), and the newer `beads-slim` and `statusline-desktop.sh`.
+  - `audit-runtimes` treats package managers in `/usr/bin` (corepack shims) as system-owned warnings, like system Python. Stale `npm:yarn` uninstalled from mise.
+  - `hk-chezmoi-staging` skips gitignored files and the gitleaks step's exclude globs, since gitleaks runs with `--source .`. The gitignored `secrets.zsh` was blocking every apply.
+  - The phone's Claude statusline uses `MOSHI_CLIENT=1`, exported from the untracked `~/.config/zsh/local.zsh`. Moshi attaches tmux via `sh -lc`, so zsh never runs first and the `env.zsh` recovery can't fire.
+- **Consequences**: The rustup stable toolchain was reinstalled through mise (its manifest was corrupt). `colorls` now comes from mise's `gem:colorls`.
