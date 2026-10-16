@@ -78,7 +78,7 @@ Each entry contains:
   - Tests: upstream's `tests/` kept, made bash-3.2 safe, and extended with checks for the local invariants above.
 - **Consequences**: One config for Mac and remote hosts. The Linux side of the templates was not exercised on this machine. On first apply, chezmoi starts managing `~/.claude/statusline.sh`, `~/.config/bd/config.yaml`, `~/.config/tmuxinator/` and clones tpm into `~/.config/tmux/plugins/tpm`; the Homebrew tpm path is no longer used.
 
-### ADR-006: First Full Apply on the VPS After the ADR-005 Merge
+### ADR-006a: First Full Apply on the VPS After the ADR-005 Merge
 - **Date**: 2026-10-15
 - **Status**: Accepted
 - **Context**: The VPS hadn't run a full `chezmoi apply` since the merge in ADR-005. About 60 targets had drifted. Most were simply behind the repo, a few had live edits, and the live mise config pinned host-only tools (beads, helix, herdr, yazi) that the shared config drops.
@@ -89,3 +89,13 @@ Each entry contains:
   - `hk-chezmoi-staging` skips gitignored files and the gitleaks step's exclude globs, since gitleaks runs with `--source .`. The gitignored `secrets.zsh` was blocking every apply.
   - The phone's Claude statusline uses `MOSHI_CLIENT=1`, exported from the untracked `~/.config/zsh/local.zsh`. Moshi attaches tmux via `sh -lc`, so zsh never runs first and the `env.zsh` recovery can't fire.
 - **Consequences**: The rustup stable toolchain was reinstalled through mise (its manifest was corrupt). `colorls` now comes from mise's `gem:colorls`.
+
+### ADR-006: Artifact Scripts (artifact-save, artifact, Raycast Script Command)
+- **Date**: 2026-10-16
+- **Status**: Accepted
+- **Context**: Chat answers and agent output need a quick way into one folder (`~/ai_infra/artifacts/`) from the shell, from Raycast and from agent skills.
+- **Decision**:
+  - `dot_scripts/executable_artifact-save` writes stdin (or the clipboard on a TTY, or always with `-c`) to `<timestamp>-<name>.md`. `dot_scripts/executable_artifact` is a television picker over that folder, newest first. Folder override: `ARTIFACTS_DIR`.
+  - The Raycast Script Command lives in `dot_config/raycast/scripts/` and only calls `~/.scripts/artifact-save -c`; Raycast has no TTY, so `-c` stops it from reading stdin. The directory is macOS-only (`.chezmoiignore`) and has to be added once under Raycast Settings → Extensions → Script Commands.
+  - The `artifact_save` skill (`~/.claude/skills/`) and the List Artifacts extension (`~/proj/raycast_artifacts`) are not tracked here.
+- **Consequences**: One implementation of the save logic. Raycast needs the dotfiles applied first.

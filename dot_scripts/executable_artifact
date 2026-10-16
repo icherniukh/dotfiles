@@ -1,0 +1,27 @@
+#!/usr/bin/env zsh
+# Fuzzy-pick a saved artifact (newest first) with television.
+# Usage: artifact        open selection in $EDITOR
+#        artifact -p     print the path
+#        artifact -c     copy the content to the clipboard
+dir="${ARTIFACTS_DIR:-$HOME/ai_infra/artifacts}"
+mode=edit
+case "${1-}" in
+  -p) mode=print ;;
+  -c) mode=copy ;;
+  "") ;;
+  *) echo "usage: artifact [-p|-c]" >&2; exit 2 ;;
+esac
+
+[[ -d "$dir" ]] || { echo "artifact: $dir does not exist" >&2; exit 1; }
+cd "$dir" || exit 1
+
+pick="$(BAT_THEME=ansi tv --no-sort \
+  -s 'ls -t' \
+  --preview-command "bat -p --color=always '{}'")" || exit 0
+[[ -n "$pick" ]] || exit 0
+
+case "$mode" in
+  print) print -r -- "$dir/$pick" ;;
+  copy)  clip=$(command -v pbcopy || command -v wl-copy); "$clip" < "$pick" && echo "copied $pick" ;;
+  edit)  exec ${EDITOR:-hx} "$pick" ;;
+esac

@@ -1,0 +1,34 @@
+#!/usr/bin/env zsh
+# Save stdin (or the clipboard when run from a terminal) to the artifacts folder.
+# Usage: artifact-save [-c] [name words...]   e.g. `artifact-save trap beat plan`
+#        some-cmd | artifact-save name
+#   -c  force the clipboard even if stdin is not a terminal (used by Raycast)
+dir="${ARTIFACTS_DIR:-$HOME/ai_infra/artifacts}"
+mkdir -p "$dir" || exit 1
+
+force_clip=0
+[[ "${1-}" == "-c" ]] && { force_clip=1; shift; }
+
+name="${*:-artifact}"
+name="${name// /-}"
+f="$dir/$(date +%Y-%m-%d-%H%M%S)-$name.md"
+
+if (( ! force_clip )) && [[ ! -t 0 ]]; then
+  cat > "$f"
+elif command -v pbpaste >/dev/null 2>&1; then
+  pbpaste > "$f"
+elif command -v wl-paste >/dev/null 2>&1; then
+  wl-paste > "$f"
+elif command -v xclip >/dev/null 2>&1; then
+  xclip -o -selection clipboard > "$f"
+else
+  echo "artifact-save: no stdin and no clipboard tool" >&2
+  exit 1
+fi
+
+if [[ ! -s "$f" ]]; then
+  rm -f "$f"
+  echo "artifact-save: nothing to save" >&2
+  exit 1
+fi
+print -r -- "$f"

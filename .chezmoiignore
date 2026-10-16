@@ -11,6 +11,7 @@ hk.pkl
 
 {{ if ne .chezmoi.os "darwin" }}
 .config/ghostty
+.config/raycast
 .hammerspoon
 **/*.darwin.zsh
 {{ end }}
