@@ -4,21 +4,21 @@ amends "package://github.com/jdx/hk/releases/download/v1.51.0/hk@1.51.0#/Config.
 import "package://github.com/jdx/hk/releases/download/v1.51.0/hk@1.51.0#/Builtins.pkl"
 
 local global = new Mapping<String, Step> {
-  /// Bare npm/pip/pyenv/nvm/fnm/pipx vs mise+uv
+  // Bare npm/pip/pyenv/nvm/fnm/pipx vs mise+uv
   ["audit_runtimes"] {
     check = "audit-runtimes --hk"
   }
-  /// Chezmoi drift when this machine is chezmoi-managed
+  // Chezmoi drift when this machine is chezmoi-managed
   ["chezmoi_verify"] {
     profiles = List("slow")
     check = "test -f \"$HOME/.config/chezmoi/chezmoi.toml\" && chezmoi verify"
   }
-  /// mise health on the live machine
+  // mise health on the live machine
   ["mise_doctor"] {
     profiles = List("slow")
     check = "command -v mise >/dev/null && mise doctor"
   }
-  /// Private keys in staged text
+  // Private keys in staged text
   ["detect_private_key"] = Builtins.detect_private_key
 }
 

@@ -1,9 +1,9 @@
 amends "package://github.com/jdx/hk/releases/download/v1.51.0/hk@1.51.0#/Config.pkl"
 import "package://github.com/jdx/hk/releases/download/v1.51.0/hk@1.51.0#/Builtins.pkl"
 
-/// Dotfiles-repo hk config (NOT deployed to ~/hk.pkl — see .chezmoiignore).
-/// Global hooks for other repos: dot_config/hk/config.pkl → ~/.config/hk/config.pkl
-/// Secret scans: use `hk-dotfiles-secrets` (staging dir), never raw gitleaks here.
+// Dotfiles-repo hk config (NOT deployed to ~/hk.pkl — see .chezmoiignore).
+// Global hooks for other repos: dot_config/hk/config.pkl → ~/.config/hk/config.pkl
+// Secret scans: use `hk-dotfiles-secrets` (staging dir), never raw gitleaks here.
 
 local gitleaks_scoped = new Config.Step {
   glob = "**/*"
@@ -47,16 +47,16 @@ local quality = new Mapping<String, Step> {
 }
 
 local dotfiles = new Mapping<String, Step> {
-  /// mise/uv/npm/pip/pyenv/nvm/fnm/pipx hygiene on the live machine
+  // mise/uv/npm/pip/pyenv/nvm/fnm/pipx hygiene on the live machine
   ["audit_runtimes"] {
     check = "audit-runtimes --hk"
   }
-  /// mise health on the live machine
+  // mise health on the live machine
   ["mise_doctor"] {
     profiles = List("slow")
     check = "command -v mise >/dev/null && mise doctor"
   }
-  /// Chezmoi source matches deployed dotfiles (run_ scripts always count as pending, so skip them)
+  // Chezmoi source matches deployed dotfiles (run_ scripts always count as pending, so skip them)
   ["chezmoi_verify"] {
     check = "command -v chezmoi >/dev/null && chezmoi verify --exclude=scripts"
   }
@@ -69,7 +69,7 @@ hooks {
   ["check"] {
     steps = secrets + quality + dotfiles
   }
-  /// Staged-file guards only. Full gitleaks runs via apply-guard staging.
+  // Staged-file guards only. Full gitleaks runs via apply-guard staging.
   ["pre-commit"] {
     stash = "git"
     steps = new Mapping<String, Step> {
