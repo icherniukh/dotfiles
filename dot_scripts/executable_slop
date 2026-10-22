@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage:
+  slop [--engine codex|claude] ["instruction"]
+
+Strips AI writing patterns from text on stdin and writes the result to stdout.
+With no instruction, uses the default "make it sound human" rewrite. With an
+instruction, applies that instruction instead.
+
+Examples:
+  echo "This leverages cutting-edge AI." | slop
+  pbpaste | slop "make it shorter and blunter"
+  cat draft.md | slop > clean.md
+
+Environment:
+  SLOP_ENGINE         Default engine. Default: codex
+  PLZ_CODEX_MODEL    Model override for codex exec. Default: gpt-6-luna
+  PLZ_CLAUDE_MODEL   Model override for claude -p
+EOF
+}
+
+engine="${SLOP_ENGINE:-codex}"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --engine)
+      if [[ $# -lt 2 ]]; then
+        echo "slop: --engine requires a value" >&2
+        exit 2
+      fi
+      engine="$2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "slop: unknown option: $1" >&2
+      exit 2
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+instruction="$*"
+
+if [[ -z "$instruction" ]]; then
+  instruction="Rewrite this text so it reads like a competent human wrote it. Remove AI writing patterns: canned openings, binary contrasts, fake importance, weasel attribution, colon reveals, inflated vocabulary, and filler adverbs. Keep the meaning, keep the voice, make the minimum effective edit."
+fi
+
+if ! command -v plz >/dev/null 2>&1; then
+  echo "slop: plz not found on PATH" >&2
+  exit 127
+fi
+
+exec plz --engine "$engine" "$instruction"

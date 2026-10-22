@@ -254,3 +254,6 @@ bd() {
     command bd "$@"
   fi
 }
+
+# Terminal AI editing widgets (^X^S rewrite, ^X^I instruct, ai: prefix).
+[[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/slop.zsh" ]] && source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/slop.zsh"

@@ -16,7 +16,7 @@ Examples:
 
 Environment:
   PLZ_ENGINE         Default engine if --engine is not provided. Default: codex
-  PLZ_CODEX_MODEL    Optional model override for codex exec. Default: gpt-5.4-mini
+  PLZ_CODEX_MODEL    Optional model override for codex exec. Default: gpt-6-luna
   PLZ_CLAUDE_MODEL   Optional model override for claude -p
 EOF
 }
@@ -95,7 +95,7 @@ fi
 
 case "${engine}" in
   codex)
-    codex_model="${PLZ_CODEX_MODEL:-gpt-5.4-mini}"
+    codex_model="${PLZ_CODEX_MODEL:-gpt-6-luna}"
     output_file="$(mktemp)"
     error_file="$(mktemp)"
     cleanup() {
