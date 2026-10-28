@@ -207,3 +207,11 @@ Each entry contains:
 - **FIGlet**: Keep the existing `fig` font/animation helpers and aliases. Stubbed binaries verify font selection, arguments, stdin and pipeline failure without terminal animation.
 - **Verification repair**: Use Git's tracked/nonignored file list for secret-scan staging, compatible with macOS Bash 3.2. Run hk as a child so staging cleanup executes on success and failure; isolated regressions and the real staged secret scan pass. This resolves `dotfiles-pkh`.
 - **Limits**: This reconciliation does not resolve the historical history writer or the other eight audit findings. No services are enabled or packages installed.
+
+### ADR-019: Consolidate Ghostty Configuration in the XDG File
+
+- **Date**: 2026-10-28
+- **Decision**: Keep one active Ghostty config at `~/.config/ghostty/config`, managed by chezmoi. Merge the effective settings from the macOS Application Support file, archive that file outside Ghostty's search paths, and point the split-color script at the XDG config. Preserve existing source edits and the current effective appearance and bindings; this consolidation does not change the titlebar style.
+- **Backup**: Original live configs, the pre-merge source config, scripts, and effective config output are retained privately under `~/.backups/ghostty/merge-20261028-105449-a7976smz/`. The old `config.APP` remains an inactive historical backup and is not refreshed by this migration.
+- **Behavior**: Ghostty 1.4.0 creates an Application Support template only if neither supported config location is found. With the XDG config present, Settings selects it when the Application Support config is absent.
+- **Verification**: Compare Ghostty's full effective config before and after migration, validate the merged file, exercise split-color editing with an isolated XDG directory and a stubbed reload command, and require empty chezmoi status for both deployed targets. No GUI reload or restart is part of this migration.

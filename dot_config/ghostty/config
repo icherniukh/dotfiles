@@ -1,4 +1,4 @@
-font-family=
+font-family="FiraCode Nerd Font"
 font-family-bold=
 font-family-italic=
 font-family-bold-italic=
@@ -38,7 +38,7 @@ freetype-load-flags=hinting,force-autohint,monochrome,autohint
 
 # theme=Rapture
 # theme=Hopscotch.256
-theme=Calamity
+theme="Raycast Dark"
 # theme=Arthur
 # theme=Horizon
 
@@ -54,8 +54,8 @@ theme=Calamity
 # selection-background=
 # selection-invert-fg-bg=true
 
-background-opacity=0.95
-background-blur-radius=30
+background-opacity=1
+background-blur=15
 
 # unfocused-split-fill=#2b103c
 # unfocused-split-fill=#1a1a2e
@@ -68,7 +68,7 @@ background-blur-radius=30
 unfocused-split-fill = #3a1a3a
 
 # split-divider-color = #fc644d
-split-divider-color = #f92672
+split-divider-color=f92672
 unfocused-split-opacity=0.420
 
 minimum-contrast=1
@@ -115,8 +115,7 @@ window-padding-balance=true
 # Note: Ghostty has no window-border-color/width config.
 # Window borders are controlled by macOS/window-decoration settings.
 
-window-padding-color=extend
-# window-padding-color=background
+window-padding-color=background
 # window-padding-color=
 
 window-vsync=false
@@ -135,9 +134,9 @@ window-theme=auto
 window-colorspace=display-p3
 # window-colorspace=srgb
 
-window-height=0
+window-height=30
 
-window-width=0
+window-width=110
 
 window-save-state=always
 
@@ -193,22 +192,23 @@ shell-integration=zsh
 
 shell-integration-features=cursor,no-sudo,title
 
-osc-color-report-format=8-bit
+osc-color-report-format=16-bit
+# osc-color-report-format=8-bit
 
 vt-kam-allowed=false
 
-custom-shader=
+# custom-shader=
 
-custom-shader-animation=true
+# custom-shader-animation=true
 
 macos-non-native-fullscreen=false
 
 # macos-titlebar-style=transparent
-macos-titlebar-style=native
+# macos-titlebar-style=native
 
-macos-titlebar-proxy-icon=visible
-
-macos-option-as-alt=left
+# macos-titlebar-proxy-icon=visible
+# macos-option-as-alt=left
+macos-option-as-alt=true
 
 macos-window-shadow=true
 
@@ -216,7 +216,11 @@ macos-auto-secure-input=true
 
 macos-secure-input-indication=true
 
-macos-icon=retro
+# macos-icon=retro
+macos-icon=custom-style
+macos-icon-frame=aluminum
+macos-icon-ghost-color=F5D0FE
+macos-icon-screen-color=A21CAF,6D28D9
 # holographic, glass, xray, chalkboard, retro
 
 #  * `aluminum` - A brushed aluminum frame. This is the default.
@@ -728,3 +732,21 @@ keybind=super+ctrl+alt+shift+f>s=write_scrollback_file:copy
 keybind=super+ctrl+alt+shift+f>t=reset
 
 
+# Bindings consolidated from the macOS Application Support config.
+keybind=cmd+ctrl+alt+shift+f>m=toggle_mouse_reporting
+keybind=cmd+ctrl+alt+shift+f>r=toggle_readonly
+keybind=cmd+ctrl+alt+shift+f>o=toggle_background_opacity
+keybind=cmd+ctrl+alt+shift+f>k=jump_to_prompt:1
+keybind=cmd+ctrl+alt+shift+f>h=jump_to_prompt:-1
+keybind=cmd+ctrl+alt+shift+f>p=jump_to_prompt:-1
+keybind=shift+enter=text:\n
+keybind=global:ctrl+alt+cmd+shift+backquote=toggle_quick_terminal
+keybind=super+shift+e=open_config
+keybind=super+shift+r=reload_config
+keybind=super+shift+t=prompt_surface_title
+keybind=ctrl+d=unbind
+keybind=super+shift+up=toggle_split_zoom
+keybind=super+ctrl+shift+up=resize_split:up,24
+keybind=super+ctrl+shift+down=resize_split:down,24
+keybind=super+ctrl+shift+left=resize_split:left,24
+keybind=super+ctrl+shift+right=resize_split:right,24
