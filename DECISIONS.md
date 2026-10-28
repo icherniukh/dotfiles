@@ -136,3 +136,74 @@ Each entry contains:
   - The widget file is sourced from `dot_config/zsh/functions.zsh` because the live `~/.zshrc` has drifted from the source (Kiro blocks, an API key) and is mode 0600; a whole-file apply of `.zshrc` would clobber that drift and loosen the mode.
 - **Verification**: Exercised in a pty harness: `^X^E` rewrote a buffered command, `^X^I` prompted and rewrote, the `ai:` prefix prompted and rewrote, an empty instruction preserved the original, and ordinary command execution was unaffected. `zsh -ic` confirmed all three bindings are registered under the live `.zshrc`.
 - **Consequences**: The `ai:` prefix reserves that word at the start of a command line. The rewrite is a command-line substitution, so it edits the buffer rather than a file; use `slop` for file or clipboard text.
+
+### ADR-011: Linux Weekly History Backup Scheduling
+- **Date**: 2026-10-24
+- **Status**: Accepted
+- **Context**: ADR-009 deployed only a macOS scheduler even though the shared backup script supports Linux.
+- **Decision**: Add Linux-only systemd user service/timer units for Sunday noon, with `Persistent=true` to catch up after downtime. Keep the macOS LaunchAgent unchanged. Document explicit one-time activation rather than starting jobs during chezmoi apply; non-systemd Linux hosts can schedule the same script themselves.
+- **Consequences**: No root service or new dependency; the user manager must run for backups to execute. Lingering is optional and requires an explicit administrative choice. Regression checks cover the schedule, script wiring, and chezmoi platform selection. The manual activation policy above was superseded by ADR-012.
+
+### ADR-012: Activate Linux History Backups During Chezmoi Apply
+- **Date**: 2026-10-24
+- **Status**: Accepted
+- **Context**: Requiring separate systemctl commands after deploying the units makes Linux setup easy to leave unfinished.
+- **Decision**: A Linux-only `run_after_` template reloads the user manager and enables/starts the timer after a full apply. Run on every apply, not once/onchange, so a skipped activation is retried when a user manager becomes available. Skip only missing systemctl/unreachable user managers; propagate reload/enable failures.
+- **Consequences**: Full applies now enforce timer activation; disabling it manually is undone by the next full apply. macOS activation and optional Linux lingering remain unchanged. Scoped file-only applies do not activate the timer. Mocked systemctl tests check after-script ordering, retries, platform gating, and error propagation without starting local jobs.
+
+### ADR-013: Safe Runtime Hooks and Isolated Completion Fixtures
+- **Date**: 2026-10-24
+- **Status**: Accepted
+- **Context**: The Ruby postinstall hook called an unsupported mise command and returned failure for non-Ruby installs. Completion tests could inherit real history, cache, and startup paths.
+- **Decision**: Use a POSIX conditional with `mise install --force gem:colorls`; non-Ruby installs succeed without doing work, while rebuild failures propagate. Default completion tests isolate HOME/XDG/ZDOTDIR before starting Zsh. The UI fixture copies the installed standalone autosuggestions script and sources checkout configuration, without plugin downloads or personal bundle loading.
+- **Consequences**: Stubbed runtime tests never install tools. UI tests require installed dependencies and accept `ZSH_AUTOSUGGESTIONS_FILE` for nonstandard plugin locations. The registration test's explicit `--live` mode remains intentionally non-isolated.
+
+### ADR-014: Native Ctrl-R History Search
+- **Date**: 2026-10-25
+- **Status**: Accepted
+- **Context**: The user requested disabling the fuzzy history picker. At the normal prompt fzf owned Ctrl-R, with `--no-sort` disabling relevance ranking; Television also assigned the key during startup.
+- **Decision**: Supersede ADR-008's fzf binding with native `history-incremental-search-backward`, reasserted by the existing prompt hook after integrations. Leave fzf and Television installed for their other features. Persist the live fix with a scoped chezmoi re-add and apply.
+- **Verification**: Update the isolated ZLE UI regression to check newest-to-oldest native matching and cancellation after late Television initialization.
+- **Consequences**: Ctrl-R searches literal history matches backward instead of opening a fuzzy picker. Existing shells need a new tab or a reload of the managed completion file.
+
+### ADR-015: Configurable Pi Footer with Joined Model and Effort
+- **Date**: 2026-10-25
+- **Status**: Accepted
+- **Context**: The user requested removing Last tok/s, Cost, Today, Input, and Output and displaying `model-id:effort` with a level-specific effort color. The previous `@reedchan/statusline` package did not expose these controls. The user approved replacing it and dropping TTFT, averages, and the context-breakdown panel.
+- **Decision**: Use reviewed, pinned `@sentixx/pi-info@0.8.0` in footer-only mode, preserving `pi-pretty-tui`'s editor. Configure path, lavender branch, cyan model, theme-semantic effort colors, threshold-colored context, cache hit, and extension statuses in `dot_pi/agent/pi-info.json.tmpl`. The supported custom renderer joins the preformatted model and thinking parts without a separator and uses Pi's public width truncation helper; no installed package/core files are patched.
+- **Chezmoi**: `dot_pi/agent/modify_settings.json` owns only the footer package declaration and preserves all unrelated runtime settings/packages. It handles an empty first-run settings file, rejects malformed JSON, and drops obsolete old-package resource filters during migration. Apply the settings modifier, JSON config, and renderer as three scoped targets. Edit the source JSON template for future visibility/order/format/color changes; the renderer remains outside extension discovery.
+- **Worktrees**: pi-info's built-in branch reader does not handle linked worktrees. Override the branch using its supported command-segment config with `git symbolic-ref --quiet --short HEAD`, cached for five seconds. No package patch or extra extension is needed; the regression fixture uses a real linked worktree.
+- **Verification**: `python3 tests/pi_statusline_ui.py` runs installed Pi 1.4.0 with copied packages, temporary HOME/XDG/agent-dir, an isolated tmux socket, synthetic provider, `--offline`, no saved session, and an OS sandbox denying networking and writes outside its temporary tree. It checks modifier preservation/idempotence, empty initialization, obsolete-filter migration, malformed-input rejection, removed fields, `model:high`/`:xhigh`, distinct semantic effort colors, linked-worktree path/branch/extensions, existing TUI packages, reload, resize, and clean exit without model calls. Installed package bytes match the reviewed tarball; scoped chezmoi status/diff are empty.
+- **Activation**: Restart the running Pi session to discover the replacement package reliably. Once loaded, the package watches config changes; reload behavior is covered by the isolated test.
+- **Rollback**: The original settings snapshot for this change is `/tmp/pi-statusline-before.nDnupi/settings.json` (temporary, not a long-term backup). To revert without overwriting later settings changes, reverse the package mapping in the chezmoi modifier to target `npm:@reedchan/statusline@1.11.3`, apply only the settings target, and ensure that package is installed. Restart Pi. The new JSON/renderer are inert when pi-info is not loaded.
+- **Install warning**: npm reported an existing high-severity `zod@4.4.3` advisory through `pi-extension-manager@0.8.2`, not through pi-info (which has no runtime dependencies). No audit fixes or unrelated updates were applied.
+
+### ADR-016: Observe Recurring Zsh History Loss
+- **Date**: 2026-10-28
+- **Status**: Reverted; polling agent stopped and disabled after user requested causal attribution instead of mitigation.
+- **Context**: The October 22 weekly archive still contains the recovered 19,593 events with its original checksum, while the October 25 archive has 690 and the current file has 1,048. The stale-shell truncation reproduction from ADR-008 establishes a mechanism, not attribution to a historical process.
+- **Decision**: Run a macOS user LaunchAgent checking canonical history once per second. Keep the last observed copy and preserve before/after files on non-append changes or deletion, plus UTC time, sizes, and running Zsh process metadata. Keep all evidence private under `~/.backups/zsh-history-watch/`; logs contain only sizes and paths. Do not automatically restore history or interfere with shells.
+- **Limits**: Polling can miss intermediate writes. Process lists are candidates, not writer attribution; macOS `fs_usage` needs administrator access, unavailable noninteractively in this session. Normal history compaction may also produce a captured rewrite. Weekly archives remain independent. Unload the agent with `launchctl bootout "gui/$(id -u)/dev.dotfiles.zsh-history-watch"`.
+- **Verification**: Disposable fixtures pass for append, atomic replacement/truncation, deletion, equal-size rewrite, empty input, and private permissions. An isolated running process captures a truncation and rejects a second instance. Live LaunchAgent is running; its initial snapshot matches canonical history byte-for-byte, directory/files are 0700/0600, and scoped chezmoi status is empty. Existing history-retention and weekly-backup checks also pass. Mise emits an existing cache-permission warning without preventing startup.
+- **Correction**: The running state above describes initial deployment only. The agent is now unloaded and persistently disabled; its evidence remains intact. Snapshot comparison establishes another loss between the October 24 and 25 daily snapshots (234 leading events removed), followed by append-only growth through today. Generic stale-writer tests do not attribute either loss. A manually invoked native `eslogger` trace is prepared under `~/.local/state/zsh/diagnosis-20261028/`; administrator authentication is required before it can run.
+- **Repository ownership**: Keep the rejected watch implementation local and excluded from Git and chezmoi deployment. Preserve existing evidence; do not restart the watch.
+
+### ADR-017: Keep Dynamic Aliases in One Runtime-Owned File
+
+- **Date**: 2026-10-28
+- **Context**: `addalias` appended to the static `aliases.zsh`, while `lsa` required a section marker that `addalias` never created. Chezmoi could overwrite aliases added to the live static file.
+- **Decision**: `addalias` and `lsa` share `user-aliases.zsh` under the Zsh config directory. Static aliases load it at startup. Chezmoi's `create_private_` seed creates the file once with mode 0600 and leaves runtime additions intact on later applies. The file is machine-local; normal reconciliation must not re-add it over the seed. Minor direct edits are supported.
+- **Behavior**: Validate names, reject alias/function collisions, preserve descriptions, quote commands with native Zsh ANSI-C quoting, and activate only the new alias after a successful append. Do not source the whole static config after an addition.
+- **Migration**: Move the existing live user alias `ghq='githubq'` and its description out of the legacy static section. Preserve unrelated live/source differences.
+- **Verification**: `mise exec -- python tests/zsh_alias_check.py` checks fresh-shell loading, descriptions, quote/newline round-trips, collisions, invalid input, canceled reads, failed writes, and real create-only chezmoi apply preserving runtime additions.
+
+### ADR-018: Reconcile Pending Changes After the VPS Rebase
+
+- **Date**: 2026-10-28
+- **Status**: Accepted
+- **Context**: Local commits and uncommitted shell, backup, runtime and Pi changes needed reconciliation with the VPS commit. Both branches had assigned ADR-006 independently.
+- **Decision**: Preserve both histories and decisions; identify the VPS decision as ADR-006a. Keep shared mise versions aligned with the already installed versions, retain the corrected Ruby postinstall hook, and keep machine-only tools in untracked `~/.config/mise/conf.d/host.toml`. Exclude local agent settings, bytecode and the rejected polling watch from deployment.
+- **Completion**: Bind menu Escape to Zsh's native `send-break`. The previous widget cleared the display while leaving menu selection active, so the next Ctrl-U accepted a match instead of clearing the input. The isolated UI regression reproduces the failure and verifies real cancellation, fresh files, flags and native history search.
+- **FIGlet**: Keep the existing `fig` font/animation helpers and aliases. Stubbed binaries verify font selection, arguments, stdin and pipeline failure without terminal animation.
+- **Verification repair**: Use Git's tracked/nonignored file list for secret-scan staging, compatible with macOS Bash 3.2. Run hk as a child so staging cleanup executes on success and failure; isolated regressions and the real staged secret scan pass. This resolves `dotfiles-pkh`.
+- **Limits**: This reconciliation does not resolve the historical history writer or the other eight audit findings. No services are enabled or packages installed.

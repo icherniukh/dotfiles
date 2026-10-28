@@ -86,25 +86,6 @@ alias qconfig='hx -w ~/.aws/amazonq ~/.aws/amazonq/global_context.json ~/.aws/am
 #  Convenience Aliases (imported)
 # ------------------------------------------------------------------------------
 
-# List user-added aliases with descriptions (added via `addalias`)
-lsa() {
-    echo "Custom Aliases (${HOME}/.config/zsh/aliases.zsh)"
-    echo "-------------------------------------------------"
-    awk '
-      BEGIN { FS = "="; in_section = 0; comment = "" }
-      /^# >>> USER ALIASES >>>$/ { in_section = 1; next }
-      in_section == 0 { next }
-      /^# / { comment = substr($0, 3); next }
-      /^alias / {
-        name = $1
-        sub(/^alias /, "", name)
-        if (comment == "") comment = "-"
-        printf "% -25s - %s\n", name, comment
-        comment = ""
-      }
-    ' "$HOME/.config/zsh/aliases.zsh"
-}
-
 # List all running processes
 alias psg='ps aux | grep'
 
@@ -146,9 +127,8 @@ local os_aliases="${ZSH_CONFIG_DIR}/aliases.$(uname | tr '[:upper:]' '[:lower:]'
 # Fuzzy-select Github PR to checkout
 alias gh-prcheckout='gh pr list | fzf | awk '\''{print }'\'' | xargs gh pr checkout'
 
-# Codex through the Turbocharging shim, which applies the repo's capability profile.
-# Plain `codex` stays available for unprofiled launches.
-alias cx="$HOME/.local/bin/cx"
+# cx is a project-local alias. Turbocharging's zsh hook defines it only inside a
+# repository that has .turbocharging/cx.zsh. Plain `codex` is unchanged.
 
 # exiftool ALL
 alias xif='exiftool -a -u -g -ee -api largefilechunks=1'
@@ -162,3 +142,6 @@ alias gay='agy'
 
 # bq alias for brewq
 alias bq='brewq'
+
+# Runtime additions are kept separate from this hand-maintained config.
+[[ -f "${ZSH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/user-aliases.zsh" ]] && source "${ZSH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/user-aliases.zsh"

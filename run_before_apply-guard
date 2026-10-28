@@ -28,12 +28,11 @@ if [[ -f "$options" ]]; then
   if grep -q 'unsetopt SHARE_HISTORY' "$options"; then
     fail "options.zsh disables SHARE_HISTORY — multi-session history will break"
   fi
-  if grep -qE '^[[:space:]]*setopt INC_APPEND_HISTORY([[:space:]]|$)' "$options" \
-     && grep -q 'setopt INC_APPEND_HISTORY_TIME' "$options"; then
-    fail "options.zsh enables both INC_APPEND_HISTORY and INC_APPEND_HISTORY_TIME"
-  fi
-  if grep -q 'HIST_IGNORE_ALL_DUPS' "$options"; then
-    fail "options.zsh uses HIST_IGNORE_ALL_DUPS — aggressively deletes older history entries"
+  if ! zsh -fc '
+    source "$1"
+    [[ -o sharehistory && ! -o incappendhistory && ! -o incappendhistorytime && ! -o histignorealldups ]]
+  ' -- "$options"; then
+    fail "options.zsh must enable SHARE_HISTORY without conflicting incremental modes or HIST_IGNORE_ALL_DUPS"
   fi
   grep -q 'setopt SHARE_HISTORY' "$options" && ok "SHARE_HISTORY enabled in options.zsh"
 else
@@ -122,7 +121,7 @@ hist="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
 if [[ -f "$hist" ]]; then
   lines=$(wc -l < "$hist" | tr -d ' ')
   if [[ "$lines" -lt 10 ]]; then
-    warn "history file suspiciously small ($lines lines) — run merge-zsh-history before apply"
+    warn "history file suspiciously small ($lines lines) — inspect history and private backups before apply"
   else
     ok "history file present ($lines lines)"
   fi

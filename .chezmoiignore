@@ -10,6 +10,7 @@ tests/
 hk.pkl
 
 {{ if ne .chezmoi.os "darwin" }}
+Library/LaunchAgents/dev.dotfiles.zsh-history-backup.plist
 .config/ghostty
 .config/raycast
 .hammerspoon
@@ -17,7 +18,17 @@ hk.pkl
 {{ end }}
 
 {{ if ne .chezmoi.os "linux" }}
+.config/systemd/user/zsh-history-backup.service
+.config/systemd/user/zsh-history-backup.timer
 **/*.linux.zsh
 # systemd/journalctl layout for the VPS service
 .config/tmuxinator/ops.yml
 {{ end }}
+
+# Local experiments and generated files must never be deployed.
+.kiro/
+**/__pycache__
+**/__pycache__/**
+**/*.pyc
+.scripts/watch-zsh-history
+Library/LaunchAgents/dev.dotfiles.zsh-history-watch.plist

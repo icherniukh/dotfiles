@@ -27,40 +27,50 @@ function tre() {
 	tree -aC -I '.git|node_modules|bower_components' --dirsfirst "$@" | less -FRNX;
 }
 
+# Dynamic aliases live outside the static config; chezmoi only creates this file.
 addalias() {
-    # Check for correct number of arguments
-    if [ "$#" -ne 2 ]; then
-        echo "Usage: addalias <alias_name> '<command>'"
-        echo "Example: addalias gp 'git push'"
+    emulate -L zsh
+    if (( $# != 2 )); then
+        print -u2 -- "Usage: addalias <alias_name> '<command>'"
         return 1
     fi
 
-    local alias_name="$1"
-    local alias_command="$2"
-    local alias_file="$HOME/.config/zsh/aliases.zsh"
-
-    # Check if alias already exists
-    if grep -q "alias ${alias_name}=" "$alias_file"; then
-        echo "Error: Alias '${alias_name}' already exists."
+    local alias_name="$1" alias_command="$2" description
+    local alias_file="${ZSH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/user-aliases.zsh"
+    if [[ ! $alias_name =~ '^[A-Za-z_][A-Za-z0-9_-]*$' ]]; then
+        print -u2 -- "Error: Invalid alias name '${alias_name}'."
+        return 1
+    fi
+    if (( ${+aliases[$alias_name]} || ${+galiases[$alias_name]} || ${+saliases[$alias_name]} || ${+functions[$alias_name]} )) ||
+        { [[ -f $alias_file ]] && command grep -q "^alias ${alias_name}=" "$alias_file"; }; then
+        print -u2 -- "Error: Alias or function '${alias_name}' already exists."
         return 1
     fi
 
-    # Prompt for description
-    echo -n "Enter a description for alias '${alias_name}': "
-    read -r description
+    read -r "description?Enter a description for alias '${alias_name}': " || return 1
+    command mkdir -p -- "${alias_file:h}" || return 1
+    # shortcut: simultaneous same-name additions can race; add locking if used concurrently.
+    # ANSI-C quoting keeps commands (including newlines) on one physical line.
+    (umask 077; printf '\n# %s\nalias %s=%s\n' "$description" "$alias_name" "${(qqqq)alias_command}" >> "$alias_file") || return 1
+    builtin alias -- "${alias_name}=${alias_command}"
+    print -r -- "Successfully added alias '${alias_name}'."
+}
 
-    # Append the alias and description to the managed section at EOF.
-    # Escape any single-quotes in the command for safe single-quoted alias.
-    local escaped=${alias_command//\'/\'\\\'\'}
-    {
-      printf '\n# %s\n' "$description"
-      printf "alias %s='%s'\n" "$alias_name" "$escaped"
-    } >> "$alias_file"
-
-    # Source the file to make the new alias available
-    source "$alias_file"
-
-    echo "Successfully added alias '${alias_name}'."
+lsa() {
+    emulate -L zsh
+    local alias_file="${ZSH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/user-aliases.zsh"
+    print -r -- "Custom Aliases (${alias_file})"
+    [[ -f $alias_file ]] || return 0
+    command awk '
+      /^# / { comment = substr($0, 3); next }
+      /^alias / {
+        name = $0
+        sub(/^alias /, "", name)
+        sub(/=.*/, "", name)
+        printf "%-25s - %s\n", name, (comment == "" ? "-" : comment)
+        comment = ""
+      }
+    ' "$alias_file"
 }
 
 brew-ll() {
@@ -254,6 +264,90 @@ bd() {
     command bd "$@"
   fi
 }
+
+# FIGlet banners through lolcat. `fig` picks from FIGLET_FUN_FONTS.
+# `fig -A` picks any installed .flf. `fig -a` animates. `fig -f doom hello` pins a font.
+# Font name is printed on stderr. Static lolcat (the `lol` alias animates and inverts).
+FIGLET_FUN_FONTS=(
+  slant doom starwars larry3d isometric1 graffiti poison nancyj-fancy
+  banner3-D big block bubble chunky cosmic cyberlarge epic fuzzy gothic
+  hollywood invita ogre puffy relief roman rounded rowancap script shadow
+  speed standard stellar smslant smshadow small crawford drpepper fraktur
+  bulbhead broadway alligator avatar digital dotmatrix lean rectangles
+  rozzo stampatello stop thick computer cricket
+)
+
+fig() {
+  emulate -L zsh
+  setopt local_options null_glob pipefail
+
+  local font="" animate=0 any=0 list=0
+  while (( $# )); do
+    case $1 in
+      -f|--font)
+        shift
+        (( $# )) || { print -u2 "fig: -f needs a font name"; return 2 }
+        font=$1
+        shift
+        ;;
+      -a|--animate) animate=1; shift ;;
+      -A|--any) any=1; shift ;;
+      -l|--list) list=1; shift ;;
+      --) shift; break ;;
+      -*)
+        print -u2 "usage: fig [-a] [-A] [-f font] [-l] [message...]"
+        return 2
+        ;;
+      *) break ;;
+    esac
+  done
+
+  if (( list )); then
+    print -l -- "${FIGLET_FUN_FONTS[@]}"
+    return 0
+  fi
+
+  if [[ $# -eq 0 && -t 0 ]]; then
+    print -u2 "usage: fig [-a] [-A] [-f font] [-l] [message...]"
+    return 2
+  fi
+
+  if [[ -z $font ]]; then
+    local -a pool
+    if (( any )); then
+      local dir
+      dir=$(command figlet -I2) || return 1
+      local -a files
+      files=("$dir"/*.flf)
+      (( ${#files} )) || { print -u2 "fig: no fonts in $dir"; return 1 }
+      pool=("${files[@]:t:r}")
+    else
+      pool=("${FIGLET_FUN_FONTS[@]}")
+    fi
+    font=${pool[$((RANDOM % ${#pool} + 1))]}
+    print -u2 -- "$font"
+  fi
+
+  local width=${COLUMNS:-80}
+  local -a paint=(command lolcat -t -F 0.5 -p 5)
+  (( animate )) && paint+=(-a -d 6 -s 10)
+
+  command figlet -w "$width" -c -f "$font" "$@" | "${paint[@]}"
+}
+
+alias figa='fig -a'
+alias figany='fig -A'
+alias figfonts='fig -l'
+alias figslant='fig -f slant'
+alias figdoom='fig -f doom'
+alias figwars='fig -f starwars'
+alias figiso='fig -f isometric1'
+alias fig3d='fig -f larry3d'
+alias figpoison='fig -f poison'
+alias figgraf='fig -f graffiti'
+alias fignancy='fig -f nancyj-fancy'
+alias figbig='fig -f big'
+alias figsms='fig -f smslant'
 
 # Terminal AI editing widgets (^X^S rewrite, ^X^I instruct, ai: prefix).
 [[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/slop.zsh" ]] && source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/slop.zsh"

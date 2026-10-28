@@ -20,6 +20,7 @@ if type brew &>/dev/null; then
   FPATH="${BREW_PREFIX}/share/zsh/site-functions:${BREW_PREFIX}/share/zsh-completions:$FPATH"
 fi
 fpath=("$ZSH_CONFIG_DIR/site-functions" "$HOME/.local/share/zsh/site-functions" "$_zsh_generated_completions" $fpath)
+[[ -d "$HOME/.grok/completions/zsh" ]] && fpath=("$HOME/.grok/completions/zsh" $fpath)
 typeset -U fpath  # deduplicate — brew shellenv + login shell can double-add paths
 unset _zsh_generated_completions
 zmodload zsh/complist
@@ -53,18 +54,7 @@ if [[ -t 0 && -t 1 ]]; then
   [[ -f $zsh_plugins ]] && source $zsh_plugins
 
   ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#666666"
-
-  typeset -gA HSMW_HIGHLIGHT_STYLES
-  HSMW_HIGHLIGHT_STYLES[path]="bg=magenta,fg=white,bold"
-  HSMW_HIGHLIGHT_STYLES[double-hyphen-option]="fg=cyan"
-  HSMW_HIGHLIGHT_STYLES[single-hyphen-option]="fg=cyan"
-
-  zstyle ":history-search-multi-word" highlight-color "fg=yellow,bold"
-  zstyle ":history-search-multi-word" page-size "8"
-  zstyle ":plugin:history-search-multi-word" active "underline"
-  zstyle ":plugin:history-search-multi-word" check-paths "yes"
-  zstyle ":plugin:history-search-multi-word" clear-on-cancel "no"
-  zstyle ":plugin:history-search-multi-word" synhl "yes"
+  ZSH_AUTOSUGGEST_STRATEGY=(match_prev_cmd history completion)
 
   # fzf (config tracked under `${XDG_CONFIG_HOME:-$HOME/.config}/fzf`).
   # unixorn/fzf-zsh-plugin already sources "$FZF_PATH/fzf.zsh"; only do it here without the plugin.

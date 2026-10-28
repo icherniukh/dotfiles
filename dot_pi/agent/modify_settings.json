@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+"""Manage only Pi's footer package; preserve all unrelated runtime settings."""
+import json
+import sys
+
+content = sys.stdin.read()
+settings = json.loads(content) if content.strip() else {}
+old = "npm:@reedchan/statusline"
+new = "npm:@sentixx/pi-info"
+target = f"{new}@0.8.0"
+packages = []
+replaced = False
+for package in settings.get("packages", []):
+    source = package if isinstance(package, str) else package.get("source", "")
+    if any(source == name or source.startswith(name + "@") for name in (old, new)):
+        if not replaced:
+            # Old-package resource filters cannot select files in its replacement.
+            migrated_old = source == old or source.startswith(old + "@")
+            packages.append(target if isinstance(package, str) or migrated_old
+                            else {**package, "source": target})
+            replaced = True
+    else:
+        packages.append(package)
+if not replaced:
+    packages.append(target)
+settings["packages"] = packages
+json.dump(settings, sys.stdout, indent=2)
+sys.stdout.write("\n")

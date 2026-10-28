@@ -6,6 +6,7 @@ set -euo pipefail
 
 ROOT="${1:-$(chezmoi source-path 2>/dev/null || echo "$HOME/proj/dotfiles")}"
 STAGING="$(mktemp -d "${TMPDIR:-/tmp}/chezmoi-hk-staging.XXXXXX")"
+trap 'rm -rf "$STAGING"' EXIT
 
 stage_file() {
   local src="$1" rel dest
@@ -15,30 +16,26 @@ stage_file() {
   cp -a "$src" "$dest"
 }
 
-# Gitignored files (e.g. secrets.zsh) never reach git, so they are not leaks.
-declare -A ignored=()
-while IFS= read -r -d '' rel; do
-  ignored["$ROOT/$rel"]=1
-done < <(git -C "$ROOT" ls-files -z --others --ignored --exclude-standard 2>/dev/null)
+# Git supplies tracked and nonignored source files without Bash 4-only arrays.
+git -C "$ROOT" ls-files -z --cached --others --exclude-standard -- \
+  'dot_*' 'run_*' > "$STAGING/.source-files"
 
 # Mirrors the gitleaks step's exclude list in hk.pkl: gitleaks scans with
 # --source ., so the step's own glob filter never narrows what it reads.
-while IFS= read -r -d '' path; do
-  [[ -n "${ignored[$path]:-}" ]] && continue
+while IFS= read -r -d '' rel; do
+  path="$ROOT/$rel"
+  [[ -f "$path" && ! -L "$path" ]] || continue
   case "$path" in
     */.git/*|*/.beads/*|*/.claude/*) continue ;;
     *.png|*.jpg|*.gif|*.svg|*.zwc) continue ;;
     *.md|*.example.*|*/secrets.example*|*/yazi/plugins/*) continue ;;
   esac
   stage_file "$path"
-done < <(find "$ROOT" \( \
-  -path "$ROOT/dot_*" -o \
-  -path "$ROOT/dot_config/*" -o \
-  -path "$ROOT/dot_scripts/*" -o \
-  -path "$ROOT/run_*" \
-  \) -type f -print0 2>/dev/null)
+done < "$STAGING/.source-files"
+rm -f "$STAGING/.source-files"
 
 [[ -f "$ROOT/hk.pkl" ]] && cp "$ROOT/hk.pkl" "$STAGING/hk.pkl"
 git -C "$STAGING" init -q
 
 echo "$STAGING"
+trap - EXIT

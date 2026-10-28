@@ -41,17 +41,10 @@ zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
 # Navigation inside menu select
 bindkey "$terminfo[kcbt]" reverse-menu-complete 2>/dev/null
-# A standalone Escape dismisses the list without executing the command.
-# Keep escape-prefixed arrow/Alt bindings intact.
-_dismiss_completion() {
-  (( ${+widgets[autosuggest-clear]} )) && zle autosuggest-clear
-  zle -R -c
-}
-zle -N _dismiss_completion
 # Note: intentionally NOT binding '^[' in the emacs map — bare ESC races with
 # arrow key escape sequences (^[[D etc.) and intermittently swallows them.
-# The menuselect binding is safe: it only fires when the completion menu is open.
-bindkey -M menuselect '^[' _dismiss_completion
+# Native send-break leaves menu selection and restores the original input.
+bindkey -M menuselect '^[' send-break
 bindkey -M menuselect '^M' .accept-line
 bindkey -M menuselect '^J' .accept-line
 

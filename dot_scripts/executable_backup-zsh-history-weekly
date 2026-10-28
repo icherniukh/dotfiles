@@ -1,0 +1,20 @@
+#!/bin/sh
+# Optional arguments: source history file, destination directory.
+set -eu
+umask 077
+
+history_file=${1:-${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history}
+backup_dir=${2:-$HOME/.backups/zsh-history}
+if [ ! -s "$history_file" ]; then
+    printf 'History is missing or empty: %s\n' "$history_file" >&2
+    exit 1
+fi
+
+mkdir -p "$backup_dir"
+staging=$(mktemp -d "$backup_dir/.history-XXXXXX")
+trap 'rm -rf "$staging"' EXIT HUP INT TERM
+archive="$backup_dir/history-$(date -u +%Y%m%dT%H%M%SZ)-${staging##*-}.zsh.gz"
+gzip -c "$history_file" > "$staging/history.zsh.gz"
+gzip -t "$staging/history.zsh.gz"
+mv -f "$staging/history.zsh.gz" "$archive"
+printf '%s\n' "$archive"

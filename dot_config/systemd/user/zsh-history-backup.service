@@ -1,0 +1,8 @@
+[Unit]
+Description=Back up Zsh history
+
+[Service]
+Type=oneshot
+ExecStart="%h/.scripts/backup-zsh-history-weekly"
+Environment=PATH=/usr/bin:/bin
+UMask=0077

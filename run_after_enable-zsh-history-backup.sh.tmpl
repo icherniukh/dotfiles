@@ -1,0 +1,14 @@
+{{ if eq .chezmoi.os "linux" -}}
+#!/bin/sh
+set -eu
+
+# Retry on every apply: a headless session may not have a user manager yet.
+if ! command -v systemctl >/dev/null 2>&1 ||
+   ! systemctl --user show-environment >/dev/null 2>&1; then
+    printf '%s\n' 'Skipping history backup timer: no systemd user manager; rerun chezmoi apply in a systemd user session.' >&2
+    exit 0
+fi
+
+systemctl --user daemon-reload
+systemctl --user enable --now zsh-history-backup.timer
+{{ end -}}

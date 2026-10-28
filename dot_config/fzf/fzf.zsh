@@ -20,7 +20,6 @@ export FZF_DEFAULT_OPTS="--height 50% --layout=reverse --border=rounded \
   --bind 'ctrl-/:toggle-preview'"
 
 # Add a toggleable preview window for long commands in history (press Ctrl-/)
-# We add --with-nth=1.. to override fzf's default hiding of history line numbers
-export FZF_CTRL_R_OPTS="--no-sort --exact --with-nth=1.. \
+export FZF_CTRL_R_OPTS="--no-sort \
   --preview 'echo {}' --preview-window down:3:hidden:wrap \
   --bind 'ctrl-/:toggle-preview'"

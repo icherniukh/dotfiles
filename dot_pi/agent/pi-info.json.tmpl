@@ -1,0 +1,23 @@
+{
+  "separator": { "char": "·", "color": "dim" },
+  "style": {
+    "position": "footer",
+    "renderer": "{{ .chezmoi.homeDir }}/.pi/agent/pi-info-renderer.ts"
+  },
+  "segments": {
+    "cwd": { "order": 10, "color": "dim" },
+    "branch": {
+      "order": 20,
+      "color": "#b4befe",
+      "command": "git symbolic-ref --quiet --short HEAD 2>/dev/null || true",
+      "interval": 5
+    },
+    "model": { "order": 30, "format": "{id}", "color": "#89dceb" },
+    "thinking": { "order": 31, "format": ":[{level}](auto)", "color": "dim" },
+    "context": { "order": 40, "format": "ctx {percent}% / {window}" },
+    "cache": { "order": 50, "format": "cache {percent}%", "color": "#94e2d5" },
+    "extensions": { "order": 60, "format": "{text}" },
+    "io": false,
+    "billing": false
+  }
+}

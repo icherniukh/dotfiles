@@ -35,12 +35,25 @@ fi
 
 # Zsh cache/history locations (HISTFILE set in ~/.zshenv for early read)
 export ZSH_CACHE_DIR="$XDG_CACHE_HOME/zsh"
-mkdir -p "$ZSH_CACHE_DIR" "$(dirname "${HISTFILE:-$XDG_STATE_HOME/zsh/history}")" >/dev/null 2>&1
+mkdir -p "$ZSH_CACHE_DIR" >/dev/null 2>&1
 
 # Re-assert after /etc/zshrc (macOS defaults HISTSIZE=2000, HISTFILE=~/.zsh_history).
 export HISTFILE="${XDG_STATE_HOME}/zsh/history"
 HISTSIZE=6969420
 SAVEHIST=6969420
+mkdir -p "${HISTFILE:h}" >/dev/null 2>&1
+
+# Keep one private hard-copy per day so a stale shell's smaller SAVEHIST cannot
+# erase the only copy. Never overwrite an earlier snapshot.
+if [[ -o interactive && -s "$HISTFILE" ]]; then
+  _history_snapshot_dir="$XDG_STATE_HOME/zsh/snapshots"
+  _history_snapshot="$_history_snapshot_dir/history-$(date +%F)"
+  if [[ ! -e $_history_snapshot ]]; then
+    (umask 077; mkdir -p "$_history_snapshot_dir" &&
+      setopt noclobber && cat "$HISTFILE" > "$_history_snapshot") 2>/dev/null
+  fi
+  unset _history_snapshot_dir _history_snapshot
+fi
 
 # Color/theme defaults
 # Cache LS_COLORS — only regenerate if vivid binary is newer than cache
