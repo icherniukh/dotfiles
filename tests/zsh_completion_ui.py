@@ -59,6 +59,20 @@ with tempfile.TemporaryDirectory(prefix="zle-") as directory:
     if not autosuggestions.is_file():
         raise SystemExit("Set ZSH_AUTOSUGGESTIONS_FILE to an installed zsh-autosuggestions.zsh")
     shutil.copyfile(autosuggestions, work / "autosuggestions.zsh")
+    multi_word = Path(os.environ.get(
+        "ZSH_HISTORY_SEARCH_MULTI_WORD_DIR",
+        antidote / "github.com/zdharma-continuum/history-search-multi-word",
+    )).expanduser()
+    if not (multi_word / "history-search-multi-word.plugin.zsh").is_file():
+        raise SystemExit("Set ZSH_HISTORY_SEARCH_MULTI_WORD_DIR to an installed history-search-multi-word")
+    shutil.copytree(multi_word, work / "multi-word", ignore=shutil.ignore_patterns(".git", "test"))
+    substring_search = Path(os.environ.get(
+        "ZSH_HISTORY_SUBSTRING_SEARCH_FILE",
+        antidote / "github.com/zsh-users/zsh-history-substring-search/zsh-history-substring-search.zsh",
+    )).expanduser()
+    if not substring_search.is_file():
+        raise SystemExit("Set ZSH_HISTORY_SUBSTRING_SEARCH_FILE to an installed zsh-history-substring-search.zsh")
+    shutil.copyfile(substring_search, work / "substring-search.zsh")
 
     for variable, relative in {
         "HOME": "home", "XDG_CONFIG_HOME": "config", "XDG_CACHE_HOME": "cache",
@@ -76,7 +90,9 @@ with tempfile.TemporaryDirectory(prefix="zle-") as directory:
     (home / ".zsh_plugins.txt").touch()
     bundle = work / "cache/zsh/plugins.zsh"
     bundle.parent.mkdir()
-    bundle.write_text(f"source {shlex.quote(str(work / 'autosuggestions.zsh'))}\n")
+    bundle.write_text(f"source {shlex.quote(str(work / 'autosuggestions.zsh'))}\n"
+                      f"source {shlex.quote(str(work / 'multi-word/history-search-multi-word.plugin.zsh'))}\n"
+                      f"source {shlex.quote(str(work / 'substring-search.zsh'))}\n")
     fzf_config = work / "config/fzf/fzf.zsh"
     fzf_config.parent.mkdir()
     shutil.copyfile(ROOT / "dot_config/fzf/fzf.zsh", fzf_config)
@@ -138,18 +154,26 @@ with tempfile.TemporaryDirectory(prefix="zle-") as directory:
                  "long menu dismissal")
         keys("C-u", "composio --", "Tab")
         wait_for(lambda s: "--help" in s and "--log-level" in s, "Composio flags from --help")
-        keys("Escape", "C-u", "C-r", "echo chosen-")
-        wait_for(lambda s: "echo chosen-recent" in s and "echo chosen-context" not in s,
-                 "native history search finds newest match after late tv init")
-        keys("C-r")
-        wait_for(lambda s: "echo chosen-context" in s and "echo chosen-recent" not in s,
-                 "native history search finds older match")
-        keys("C-g")
-        wait_for(lambda s: s == "TEST>", "native history search cancellation")
-        keys(f"bindkey '^R' > {shlex.quote(str(work / 'ctrl-r'))}", "Enter")
-        wait_for(lambda s: (work / "ctrl-r").exists(), "history binding probe")
-        assert 'history-incremental-search-backward' in (work / 'ctrl-r').read_text()
-        print("Completion/history UI: PASS (Escape, fresh files, flags, contextual suggestion, native Ctrl-R)")
+        # Up cycles plain history and ignores the typed text.
+        keys("Escape", "C-u", "echo chosen-", "Up")
+        wait_for(lambda s: s == "TEST> placeholder", "Up recalls the newest command, not a match")
+        keys("Up")
+        wait_for(lambda s: s == "TEST> context-one", "Up steps to the previous command")
+        keys("C-u", "C-r", "chosen-")
+        wait_for(lambda s: "echo chosen-recent" in s and "echo chosen-context" in s
+                 and s.index("echo chosen-recent") < s.index("echo chosen-context"),
+                 "Ctrl-R lists every match below the prompt, newest first, after late tv init")
+        keys("Enter")
+        wait_for(lambda s: s == "TEST> echo chosen-recent", "Enter puts the selected match on the line")
+        keys("C-u")
+        wait_for(lambda s: s == "TEST>", "line cleared after history search")
+        keys(f"{{ bindkey '^R'; bindkey '^[[A' }} > {shlex.quote(str(work / 'bindings'))}", "Enter")
+        wait_for(lambda s: (work / "bindings").exists(), "history binding probe")
+        bindings = (work / 'bindings').read_text()
+        assert 'history-search-multi-word' in bindings, bindings
+        assert '_up_line_or_local_history' in bindings, bindings
+        print("Completion/history UI: PASS (Escape, fresh files, flags, contextual suggestion, "
+              "plain Up, multi-word Ctrl-R list)")
     finally:
         subprocess.run(
             ["tmux", "-S", SOCKET, "kill-server"], env=ENV, capture_output=True

@@ -9,6 +9,7 @@ mfaerevaag/wd
 wfxr/forgit
 zsh-users/zsh-completions
 zsh-users/zsh-autosuggestions
+zdharma-continuum/history-search-multi-word
 
 # Keep these last, in this order: syntax-highlighting wraps every widget defined
 # before it, and history-substring-search must load after syntax-highlighting.

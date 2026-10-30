@@ -48,13 +48,31 @@ bindkey -M menuselect '^[' send-break
 bindkey -M menuselect '^M' .accept-line
 bindkey -M menuselect '^J' .accept-line
 
-# Keep native Ctrl-R history search after integrations (tv also binds Ctrl-R).
+# Ctrl-R opens history-search-multi-word's match list below the prompt; reassert it after
+# integrations that steal the key (tv). Native search is the fallback without the plugin.
 _bind_history_search() {
-  bindkey '^R' history-incremental-search-backward
+  if (( ${+widgets[history-search-multi-word]} )); then
+    bindkey '^R' history-search-multi-word
+  else
+    bindkey '^R' history-incremental-search-backward
+  fi
 }
 _bind_history_search
 autoload -Uz add-zsh-hook
 add-zsh-hook precmd _bind_history_search
+
+_up_line_or_local_history() {
+  zle set-local-history -n 1
+  zle up-line-or-history
+  zle set-local-history -n 0
+}
+_down_line_or_local_history() {
+  zle set-local-history -n 1
+  zle down-line-or-history
+  zle set-local-history -n 0
+}
+zle -N _up_line_or_local_history
+zle -N _down_line_or_local_history
 
 # History substring search and autosuggestion bindings must run after plugins
 # are fully loaded. Guards at source time fail because antidote loads plugins
@@ -65,13 +83,11 @@ _late_key_bindings() {
   (( _late_bindings_done )) && return
   _late_bindings_done=1
 
-  # Up/down arrows: substring search if available, fall back to plain history
-  if (( ${+widgets[history-substring-search-up]} )); then
-    bindkey '^[[A' history-substring-search-up
-    bindkey '^[[B' history-substring-search-down
-    bindkey '^P'   history-substring-search-up
-    bindkey '^N'   history-substring-search-down
-  fi
+  # Up/Down and ^P/^N cycle this shell's own commands without filtering on the typed text;
+  # commands SHARE_HISTORY imports from other tabs are skipped (Ctrl-R searches everything).
+  local key
+  for key in '^[[A' '^[OA' '^P'; do bindkey "$key" _up_line_or_local_history; done
+  for key in '^[[B' '^[OB' '^N'; do bindkey "$key" _down_line_or_local_history; done
 
   # ^F and ^E explicitly accept the full autosuggestion.
   # Right arrow (^[[C) is intentionally left at its default forward-char binding:
