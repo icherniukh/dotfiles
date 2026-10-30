@@ -83,9 +83,11 @@ source is a seed, not a synchronized copy of the runtime data.
   mise exec -- bash tests/zsh_completion_check.sh
   mise exec -- python tests/zsh_completion_ui.py
   ```
-  The UI check needs installed Zsh, tmux, fzf, Claude, Composio, and
-  zsh-autosuggestions. Set `ZSH_AUTOSUGGESTIONS_FILE` if that plugin is outside
-  Antidote's default cache. Both completion checks use temporary HOME/XDG paths
+  The UI check needs installed Zsh, tmux, fzf, Claude, Composio,
+  zsh-autosuggestions, zsh-history-substring-search and history-search-multi-word.
+  If a plugin is outside Antidote's default cache, point `ZSH_AUTOSUGGESTIONS_FILE`,
+  `ZSH_HISTORY_SUBSTRING_SEARCH_FILE` or `ZSH_HISTORY_SEARCH_MULTI_WORD_DIR` at it.
+  Both completion checks use temporary HOME/XDG paths
   and controlled configuration; `zsh_completion_check.sh --live` is an explicit
   opt-in to inspect your deployed shell instead.
 
