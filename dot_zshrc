@@ -102,14 +102,20 @@ compdef _tv_complete tv
 fi
 unset -f _eval_init
 export CLAUDE_CODE_NO_FLICKER=1
+export CLAUDE_CODE_FORCE_TERMINAL_IMAGES=1
 
 # Optional per-machine tool dirs: only added when present (see paths.zsh).
 [[ -d "$HOME/.kimi-code/bin" ]] && path=("$HOME/.kimi-code/bin" $path)
+# grok CLI; appended so mise shims keep precedence. Its completions are added to fpath in plugins.zsh.
+[[ -d "$HOME/.grok/bin" ]] && path+=("$HOME/.grok/bin")
 # agentify (aglog, mcp-attach) — cross-machine Claude/Codex tooling
 [[ -d "$HOME/proj/agentify/bin" ]] && path=("$HOME/proj/agentify/bin" $path)
 
 # adpd (active developer's projects directory) — curated symlink view of ~/proj
 [[ -f "$HOME/proj/adpd/init.sh" ]] && source "$HOME/proj/adpd/init.sh"
+
+# Entire CLI completion. Its installer also ran a second bare compinit, which drops compdefs registered after the first one.
+(( ${+functions[compdef]} )) && command -v entire >/dev/null 2>&1 && source <(entire completion zsh)
 
 if [[ "$ZPROF" = true ]]; then
   echo "  ## Finished ZPROF"
