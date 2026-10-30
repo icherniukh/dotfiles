@@ -42,6 +42,8 @@ root = Path(sys.argv[1])
 service_path = '.config/systemd/user/zsh-history-backup.service'
 timer_path = '.config/systemd/user/zsh-history-backup.timer'
 launchagent_path = 'Library/LaunchAgents/dev.dotfiles.zsh-history-backup.plist'
+# Source dirs carry private_ so chezmoi keeps ~/Library and LaunchAgents at 0700.
+launchagent_source = 'private_Library/private_LaunchAgents/dev.dotfiles.zsh-history-backup.plist.tmpl'
 
 def unit(path):
     config = configparser.ConfigParser(interpolation=None)
@@ -79,7 +81,7 @@ for os_name in ('linux', 'darwin', 'freebsd'):
     else:
         assert not hook.strip(), os_name
     if os_name == 'darwin':
-        plist = plistlib.loads(render(launchagent_path + '.tmpl').encode())
+        plist = plistlib.loads(render(launchagent_source).encode())
         assert plist['StartCalendarInterval'] == {'Weekday': 0, 'Hour': 12, 'Minute': 0}
         assert plist['ProgramArguments'][0].endswith('/.scripts/backup-zsh-history-weekly')
 

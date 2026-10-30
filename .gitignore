@@ -36,5 +36,5 @@ __pycache__/
 
 # Rejected polling mitigation: retained locally, not part of managed dotfiles.
 dot_scripts/executable_watch-zsh-history
-Library/LaunchAgents/dev.dotfiles.zsh-history-watch.plist.tmpl
+private_Library/private_LaunchAgents/dev.dotfiles.zsh-history-watch.plist.tmpl
 tests/zsh_history_watch_check.py

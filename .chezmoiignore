@@ -19,6 +19,7 @@ Library/LaunchAgents/dev.dotfiles.zsh-history-backup.plist
 {{ end }}
 
 {{ if ne .chezmoi.os "linux" }}
+.config/systemd
 .config/systemd/user/zsh-history-backup.service
 .config/systemd/user/zsh-history-backup.timer
 **/*.linux.zsh
