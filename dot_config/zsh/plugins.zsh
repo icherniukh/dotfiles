@@ -67,6 +67,11 @@ if [[ -t 0 && -t 1 ]]; then
   if command -v fzf >/dev/null 2>&1 && (( ! ${+aliases[fkill]} )); then
     [[ -n ${FZF_PATH-} && -f "${FZF_PATH}/fzf.zsh" ]] && source "${FZF_PATH}/fzf.zsh"
   fi
+
+  # Atuin records a second copy of history and leaves Ctrl-R, Up and ? to the zsh bindings (ADR-022, ADR-024).
+  if command -v atuin >/dev/null 2>&1; then
+    eval "$(atuin init zsh --disable-ctrl-r --disable-up-arrow --disable-ai)"
+  fi
 fi
 
 # 4. Run compinit AFTER plugins so all fpath additions are visible, in every
