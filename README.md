@@ -77,6 +77,7 @@ source is a seed, not a synchronized copy of the runtime data.
   mise exec -- python tests/zsh_fig_check.py
   mise exec -- python tests/hk_staging_check.py
   mise exec -- python tests/mise_postinstall_check.py
+  python3 tests/artifact_save_check.py
   mise exec -- bash tests/zsh_completion_check.sh
   mise exec -- python tests/zsh_completion_ui.py
   ```

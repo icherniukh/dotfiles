@@ -11,24 +11,28 @@ force_clip=0
 
 name="${*:-artifact}"
 name="${name// /-}"
-f="$dir/$(date +%Y-%m-%d-%H%M%S)-$name.md"
+stamp="$(date +%Y-%m-%d-%H%M%S)" || exit 1
+temporary="$(mktemp "$dir/.artifact-XXXXXX")" || exit 1
+trap 'rm -f "$temporary"' EXIT HUP INT TERM
+f="$dir/$stamp-$name-${temporary##*-}.md"
 
 if (( ! force_clip )) && [[ ! -t 0 ]]; then
-  cat > "$f"
+  cat
 elif command -v pbpaste >/dev/null 2>&1; then
-  pbpaste > "$f"
+  pbpaste
 elif command -v wl-paste >/dev/null 2>&1; then
-  wl-paste > "$f"
+  wl-paste
 elif command -v xclip >/dev/null 2>&1; then
-  xclip -o -selection clipboard > "$f"
+  xclip -o -selection clipboard
 else
   echo "artifact-save: no stdin and no clipboard tool" >&2
   exit 1
-fi
+fi > "$temporary" || exit $?
 
-if [[ ! -s "$f" ]]; then
-  rm -f "$f"
+if [[ ! -s "$temporary" ]]; then
   echo "artifact-save: nothing to save" >&2
   exit 1
 fi
+# Publish complete input without replacing an existing save.
+ln "$temporary" "$f" || exit 1
 print -r -- "$f"
