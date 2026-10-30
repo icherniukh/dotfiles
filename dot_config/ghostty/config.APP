@@ -39,23 +39,25 @@ split-divider-color=#97c5fb
 # split-divider-color=#330088
 # split-divider-color=#f92672
 
-macos-icon=official
+macos-icon=custom-style
 macos-icon-frame=chrome
+macos-icon-ghost-color = red
+macoss-icon-screen-color = gray
 
 # keybind = cmd+ctrl+alt+shift+f>m=toggle_mouse_reporting
 
-keybind = cmd+ctrl+alt+shift+f>m=toggle_mouse_reporting
-keybind = cmd+ctrl+alt+shift+f>r=toggle_readonly
-keybind = cmd+ctrl+alt+shift+f>t=reset
-keybind = cmd+ctrl+alt+shift+f>o=toggle_background_opacity
-keybind = cmd+ctrl+alt+shift+f>j=jump_to_prompt:1
-keybind = cmd+ctrl+alt+shift+f>h=jump_to_prompt:-1
-keybind = cmd+ctrl+alt+shift+f>p=jump_to_prompt:-1
+keybind=cmd+ctrl+alt+shift+f>m=toggle_mouse_reporting    #    toggle_mouse_reporting : hyp+f -> M
+keybind=cmd+ctrl+alt+shift+f>r=toggle_readonly           #           toggle_readonly : hyp+f -> R
+keybind=cmd+ctrl+alt+shift+f>t=reset                     #                     reset : hyp+f -> T
+keybind=cmd+ctrl+alt+shift+f>o=toggle_background_opacity # toggle_background_opacity : hyp+f -> O
+keybind=cmd+ctrl+alt+shift+f>j=jump_to_prompt:1          #            jump_to_prompt : hyp+f -> J
+keybind=cmd+ctrl+alt+shift+f>h=jump_to_prompt:-1         #            jump_to_prompt : hyp+f -> H
+keybind=cmd+ctrl+alt+shift+f>p=jump_to_prompt:-1         #            jump_to_prompt : hyp+f -> P
 
 keybind=shift+enter=text:\n
-# Hyper (cmd+ctrl+alt+shift) + ` toggles the quick terminal globally
 
-keybind = global:cmd+backquote=toggle_quick_terminal
+# Hyper (cmd+ctrl+alt+shift) + ` toggles the quick terminal globally
+keybind = global:ctrl+backquote=toggle_quick_terminal
 keybind = global:ctrl+alt+cmd+shift+backquote=toggle_quick_terminal
 
 # keybind=shift+enter=unbind
