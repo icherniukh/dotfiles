@@ -1,0 +1,27 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/sh
+set -eu
+
+# Make Zed the LaunchServices default for text and source files, so `open`
+# (and links clicked in Ghostty) land in Zed. Edit the lists to re-run.
+bundle=dev.zed.Zed
+
+if ! command -v duti >/dev/null 2>&1; then
+    printf '%s\n' 'Skipping Zed default editor: duti not found; run `brew install duti` and chezmoi apply again.' >&2
+    exit 0
+fi
+
+# Each change raises a macOS confirmation dialog, so only touch types that are
+# not already Zed.
+for uti in public.plain-text public.source-code public.script public.shell-script \
+    public.python-script public.json public.yaml net.daringfireball.markdown; do
+    [ "$(duti -d "$uti" 2>/dev/null)" = "$bundle" ] || duti -s "$bundle" "$uti" all
+done
+
+for ext in txt text md markdown log csv diff patch \
+    py rb sh bash zsh lua go rs swift java kt c h cpp hpp \
+    js mjs ts tsx css scss sql \
+    json toml yaml yml xml ini cfg conf; do
+    [ "$(duti -x "$ext" 2>/dev/null | sed -n 3p)" = "$bundle" ] || duti -s "$bundle" ".$ext" all
+done
+{{ end -}}
