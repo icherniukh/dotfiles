@@ -38,7 +38,13 @@ if mkdir -p "${zsh_plugins:h}" >/dev/null 2>&1 && [[ ! -f $zsh_plugins || "$_zsh
   fi
   if [[ -n "$_antidote_path" ]]; then
     source "$_antidote_path"
-    antidote bundle <"$_zsh_plugins_src" >|$zsh_plugins
+    if _antidote_bundle=$(mktemp "${zsh_plugins}.XXXXXX"); then
+      if antidote bundle <"$_zsh_plugins_src" >|"$_antidote_bundle"; then
+        mv -f "$_antidote_bundle" "$zsh_plugins"
+      fi
+      rm -f "$_antidote_bundle"
+    fi
+    unset _antidote_bundle
   fi
   unset _antidote_path
 fi
