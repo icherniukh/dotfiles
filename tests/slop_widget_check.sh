@@ -13,6 +13,7 @@ widget="${repo_root}/dot_config/zsh/slop.zsh"
 slop_script="${repo_root}/dot_scripts/executable_slop"
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
+export ZDOTDIR="$tmpdir"
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 ok() { echo "OK:   $*"; }
@@ -62,9 +63,19 @@ mkdir -p "$stub_bin"
 cat > "${stub_bin}/plz" <<'STUB'
 #!/usr/bin/env bash
 cat >/dev/null
-echo "REWRITTEN_BY_STUB"
+printf '%s\n' "${SLOP_TEST_OUTPUT-REWRITTEN_BY_STUB}"
+exit "${SLOP_TEST_STATUS:-0}"
 STUB
 chmod +x "${stub_bin}/plz"
+
+# Nonempty partial output must not turn a failed model call into a rewrite.
+PATH="$stub_bin:$PATH" SLOP_TEST_STATUS=7 SLOP_TEST_OUTPUT=PARTIAL_RESULT \
+  zsh -fc 'source "$1"; if _slop_transform rewrite original; then exit 1; fi; [[ -z $_SLOP_RESULT ]]' \
+  -- "$widget" 2>/dev/null
+PATH="$stub_bin:$PATH" SLOP_TEST_OUTPUT='' \
+  zsh -fc 'source "$1"; if _slop_transform rewrite original; then exit 1; fi; [[ -z $_SLOP_RESULT ]]' \
+  -- "$widget" 2>/dev/null
+ok "failed and empty model output rejected"
 
 cat > "${tmpdir}/harness.py" <<'PY'
 import os, pty, select, sys, time

@@ -44,7 +44,11 @@ _slop_transform() {
     return 1
   fi
 
-  _SLOP_RESULT="$(printf '%s' "$original" | plz "$instruction" 2>/dev/null)"
+  if ! _SLOP_RESULT="$(printf '%s' "$original" | plz "$instruction" 2>/dev/null)"; then
+    _SLOP_RESULT=""
+    print -n -- "slop: rewrite failed" >&2
+    return 1
+  fi
 
   if [[ -z "$_SLOP_RESULT" ]]; then
     print -n -- "slop: the model returned nothing" >&2
