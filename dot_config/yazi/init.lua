@@ -3,6 +3,15 @@ require("git"):setup()
 
 require("full-border"):setup()
 
+-- adpd shelf labels + ' a / ' m / ' r actions (plugin linked by ~/proj/adpd/install.sh --yazi)
+-- adpd's plugin lives in ~/proj/adpd, outside these dotfiles; skip it where that checkout is missing.
+local adpd_ok, adpd = pcall(require, "adpd")
+if adpd_ok then
+	adpd:setup {
+		project_paths = { "~/proj", "~/proj/ideas", "~/repos" },
+	}
+end
+
 require("mime-ext.local"):setup {
 	-- Expand the existing filename database (lowercase), for example:
 	with_files = {
@@ -19,7 +28,7 @@ require("mime-ext.local"):setup {
 
 	-- If the MIME type is not in both filename and extension databases,
 	-- then fallback to Yazi's preset `mime.local` plugin, which uses `file(1)`
-	fallback_file1 = false,
+	fallback_file1 = true, -- unknown names/extensions: detect by content, as before mime-ext was active
 }
 
 if ya.target_family() == "unix" and jit and jit.os == "OSX" then

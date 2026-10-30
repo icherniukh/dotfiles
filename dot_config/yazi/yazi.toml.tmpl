@@ -20,7 +20,7 @@ wrap = "yes"
 
 [opener]
 
-edit = [{ run = '${EDITOR:-hx} "$@"', block = true, desc = "Helix" }]
+edit = [{ run = 'hx %s', block = true, desc = "Helix" }]
 
 [open]
 
@@ -32,6 +32,7 @@ prepend_rules = [
   { url = "*.conf", use = "edit" },
   { url = "*.py", use = "edit" },
   { mime = "application/json", use = "edit" },
+  { url = "*", use = "edit" },
   # { url = "*.xml", use = "edit" },
   # 	{ url = "*.html", use = [ "open", "edit" ] },
 ]
@@ -57,13 +58,19 @@ image_bound = [0, 0]
 [plugin]
 
 prepend_fetchers = [
-  { id = "git", group = "file", url = "*", run = "git" },
-  { id = "git", group = "directory", url = "*/", run = "git" },
-  { id = "mime", group = "file", url = "local://*", run = "mime-ext.local", prio = "high" },
-  { id = "mime", group = "file", url = "remote://*", run = "mime-ext.remote", prio = "high" },
+  # Yazi 26: `group` names the plugin; within a group the first matching entry wins.
+  { group = "git", url = "*", run = "git" },
+  { group = "git", url = "*/", run = "git" },
+{{- if stat (joinPath .chezmoi.homeDir "proj/adpd/yazi/adpd.yazi") }}
+  # adpd's plugin lives in ~/proj/adpd, outside these dotfiles.
+  { group = "adpd", url = "*/", run = "adpd" },
+{{- end }}
+  { group = "mime", url = "local://*", run = "mime-ext.local", prio = "high" },
+  { group = "mime", url = "remote://*", run = "mime-ext.remote", prio = "high" },
 {{- if eq .chezmoi.os "darwin" }}
-  { id = "mactag", group = "file", url = "*", run = "mactag" },
-  { id = "mactag", group = "directory", url = "*/", run = "mactag" },
+  # mactag needs the `tag` CLI (brew install tag); its fetchers fail without it.
+  # { group = "mactag", url = "*", run = "mactag" },
+  # { group = "mactag", url = "*/", run = "mactag" },
 {{- end }}
 ]
 

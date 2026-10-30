@@ -1,31 +1,15 @@
 local M = {}
 
-function M:peek()
-	local child
-	local l = self.file.cha.len
-	if l == 0 then
-		child = Command("hexyl")
-			:args({
-				tostring(self.file.url),
-			})
-			:stdout(Command.PIPED)
-			:stderr(Command.PIPED)
-			:spawn()
-	else
-		child = Command("hexyl")
-			:args({
-				"--border",
-				"none",
-				"--terminal-width",
-				tostring(self.area.w),
-				tostring(self.file.url),
-			})
-			:stdout(Command.PIPED)
-			:stderr(Command.PIPED)
-			:spawn()
+-- Ported to the Yazi 26 previewer API (peek/seek receive `job`).
+function M:peek(job)
+	local args = job.file.cha.len == 0 and {} or { "--border", "none", "--terminal-width", tostring(job.area.w) }
+	args[#args + 1] = tostring(job.file.url)
+	local child, err = Command("hexyl"):arg(args):stdout(Command.PIPED):stderr(Command.PIPED):spawn()
+	if not child then
+		return require("empty").msg(job, "Failed to start `hexyl`: " .. tostring(err))
 	end
 
-	local limit = self.area.h
+	local limit = job.area.h
 	local i, lines = 0, ""
 	repeat
 		local next, event = child:read_line()
@@ -36,29 +20,20 @@ function M:peek()
 		end
 
 		i = i + 1
-		if i > self.skip then
+		if i > job.skip then
 			lines = lines .. next
 		end
-	until i >= self.skip + limit
+	until i >= job.skip + limit
 
 	child:start_kill()
-	if self.skip > 0 and i < self.skip + limit then
-		ya.manager_emit("peek", { math.max(0, i - limit), only_if = self.file.url, upper_bound = true })
+	if job.skip > 0 and i < job.skip + limit then
+		ya.emit("peek", { math.max(0, i - limit), only_if = job.file.url, upper_bound = true })
 	else
-		lines = lines:gsub("\t", string.rep(" ", PREVIEW.tab_size))
-		ya.preview_widgets(self, { ui.Text.parse(lines):area(self.area) })
+		lines = lines:gsub("\t", string.rep(" ", rt.preview.tab_size))
+		ya.preview_widget(job, ui.Text.parse(lines):area(job.area))
 	end
 end
 
-function M:seek(units)
-	local h = cx.active.current.hovered
-	if h and h.url == self.file.url then
-		local step = math.floor(units * self.area.h / 10)
-		ya.manager_emit("peek", {
-			tostring(math.max(0, cx.active.preview.skip + step)),
-			only_if = tostring(self.file.url),
-		})
-	end
-end
+function M:seek(job) require("code"):seek(job) end
 
 return M
