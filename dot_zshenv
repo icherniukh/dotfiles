@@ -2,7 +2,9 @@
 # History must be configured here so zsh reads HISTFILE before .zshrc runs.
 
 : "${XDG_STATE_HOME:=$HOME/.local/state}"
-export HISTFILE="${XDG_STATE_HOME}/zsh/history"
+# Not exported: a child bash would adopt it and trim the file to 500 lines on exit.
+HISTFILE="${XDG_STATE_HOME}/zsh/history"
+typeset -g +x HISTFILE
 HISTSIZE=6969420
 SAVEHIST=6969420
 mkdir -p "${XDG_STATE_HOME}/zsh" 2>/dev/null

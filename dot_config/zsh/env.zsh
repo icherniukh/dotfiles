@@ -38,7 +38,8 @@ export ZSH_CACHE_DIR="$XDG_CACHE_HOME/zsh"
 mkdir -p "$ZSH_CACHE_DIR" >/dev/null 2>&1
 
 # Re-assert after /etc/zshrc (macOS defaults HISTSIZE=2000, HISTFILE=~/.zsh_history).
-export HISTFILE="${XDG_STATE_HOME}/zsh/history"
+HISTFILE="${XDG_STATE_HOME}/zsh/history"
+typeset -g +x HISTFILE  # see ~/.zshenv
 HISTSIZE=6969420
 SAVEHIST=6969420
 mkdir -p "${HISTFILE:h}" >/dev/null 2>&1

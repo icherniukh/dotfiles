@@ -37,6 +37,17 @@ HOME="$tmpdir" XDG_STATE_HOME="$tmpdir/state" XDG_CACHE_HOME="$tmpdir/cache" \
     print "History retention and immutable daily snapshot: PASS"
   ' -- "$repo_root"
 
+# Child processes must not inherit HISTFILE: an interactive bash would trim it to 500 lines.
+for config in dot_zshenv dot_config/zsh/env.zsh; do
+  HOME="$tmpdir" XDG_STATE_HOME="$tmpdir/state" XDG_CACHE_HOME="$tmpdir/cache" \
+    HISTFILE=/inherited/history zsh -fc '
+      source "$1/$2"
+      [[ $HISTFILE == "$XDG_STATE_HOME/zsh/history" ]]
+      [[ -z "$(/bin/sh -c "printf %s \"\${HISTFILE-}\"")" ]]
+    ' -- "$repo_root" "$config"
+done
+echo "HISTFILE stays private to zsh: PASS"
+
 # A long-lived writer must not trim a larger history recovered while it is open.
 python3 - "$repo_root" <<'PY'
 import os
