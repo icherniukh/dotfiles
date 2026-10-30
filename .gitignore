@@ -17,6 +17,7 @@ local/.claude/
 zsh/.config/zsh/secrets.zsh
 dot_config/zsh/secrets.zsh
 dot_config/zsh/local.zsh
+dot_config/mise/conf.d/host.toml
 
 
 # Beads / Dolt files (added by bd init)

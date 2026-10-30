@@ -215,6 +215,16 @@ Each entry contains:
 - **Backup**: Original live configs, the pre-merge source config, scripts, and effective config output are retained privately under `~/.backups/ghostty/merge-20261028-105449-a7976smz/`. The old `config.APP` remains an inactive historical backup and is not refreshed by this migration.
 - **Behavior**: Ghostty 1.4.0 creates an Application Support template only if neither supported config location is found. With the XDG config present, Settings selects it when the Application Support config is absent.
 - **Verification**: Compare Ghostty's full effective config before and after migration, validate the merged file, exercise split-color editing with an isolated XDG directory and a stubbed reload command, and require empty chezmoi status for both deployed targets. No GUI reload or restart is part of this migration.
+
+### ADR-020: Fix Rollout Failures Without Changing Installed Runtimes
+
+- **Date**: 2026-10-28
+- **Decision**: Restore shared mise tool selections to the VPS baseline from `3c314da` in `~/.config/mise/conf.d/00-shared.toml`: Node 24, Python 3.13, Ruby 3.4, Bun 1.3.14 and hk 1.51.0. Keep newer/workstation-only tools in the unmanaged `conf.d/host.toml`. Leave tools out of global `config.toml`, which takes precedence over `conf.d`; the host file can then override the earlier shared file. Preserve the Mac's actual live selections, including its Python 3.13.15/Ruby 3.3 overrides, rather than applying pending source upgrades. Ignore the host file in Git and chezmoi. Install and verify replacements before selecting them on any host; this change installs, removes and upgrades no runtimes.
+- **Host writes** (2026-10-30): `config.toml` sets `[settings.write_targets] tools` to `conf.d/host.toml`, so `mise use -g` writes host-local selections there instead of into the shared file.
+- **Failure handling**: Require jq for the Ruby postinstall hook and propagate malformed events/rebuild errors. Reject nonzero rewrite commands even when they produced partial text. Generate Antidote bundles beside the existing cache and replace it only after success. Save artifacts to private temporary files, then publish unique Markdown paths with an exclusive hard link; failed reads leave no published artifact and never replace earlier saves.
+- **Verification**: Isolated regressions cover host precedence and preservation through real chezmoi apply, same-second saves, failed stdin/clipboard reads and cleanup, missing jq/malformed install events, failed/empty model output, and Antidote failure/retry without touching the last working bundle. Keep full ZLE/completion and history-backup checks as integration coverage. Real VPS installation and service activation remain separate deployment checks.
+- **Local backup**: Pre-apply live configs and the host file are retained privately at `~/.backups/dotfiles/review-fixes-20261028-184801-3x_xfquo/`.
+
 ### ADR-021: Keep HISTFILE Private to Zsh and Remove the Kiro Shell Wrapper
 
 - **Date**: 2026-10-29
@@ -222,6 +232,7 @@ Each entry contains:
 - **Decision**: Assign `HISTFILE` without exporting it, and run `typeset -g +x HISTFILE` so an inherited exported value is also unexported. Zsh children read `~/.zshenv` themselves and do not need the environment variable. `tests/zsh_history_check.sh` asserts that child processes do not see it.
 - **Kiro**: Removed the Kiro CLI pre/post blocks from all live shell startup files with `kiro-cli integrations uninstall dotfiles` (plus manual removal from `~/.zshrc`, which the uninstaller skipped) and quit its desktop daemon, which the pre block launched. Kiro's `chat` aliases still work without the wrapper. Pre-change copies are under `~/.backups/kiro-unwrap-20261029-230220/`.
 - **Recovery**: Rebuilt the history from daily snapshots, recovery archives, weekly backups and the Kiro/Amazon Q command databases (zsh rows only), limited to the last 14 months: 18160 events. File sources were normalized to zsh's metafied encoding before deduplication; database rows within 5 s of an identical command were treated as duplicates. The result round-trips byte-identically through zsh `fc -R`/`fc -W`. A second pass added 111 events quoted in agent tool outputs (mostly Antigravity, Jul–Sep 2026). The total is 18274 events. Pre-restore copies are in `~/.backups/zsh-history-restore/`. No source covers May 2026. Apart from those transcript quotes, no source covers July, August or September 2026. 5750 older events (2024-10 to 2025-08) remain in the archives and were not merged.
+
 ### ADR-022: Record History in Atuin Without Taking Over Key Bindings
 - **Date**: 2026-10-30
 - **Context**: Kiro's command database was the only second copy of shell history, and it was removed in ADR-021. Atuin 18.24.3 is installed with Homebrew. By default, its zsh init binds Ctrl-R and Up to its search interface and `?` to Atuin AI.

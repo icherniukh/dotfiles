@@ -39,5 +39,17 @@ exit "$MISE_TEST_STATUS"
             result = subprocess.run([shell, "-c", hook], env=env, text=True, capture_output=True)
             assert result.returncode == status, (shell, tools, result.stderr)
             assert log.read_text().splitlines() == expected, (shell, tools)
-print("Mise postinstall: PASS (non-Ruby no-op, forced colorls rebuild, failure propagation; "
+        # A missing parser must fail clearly instead of silently skipping Ruby.
+        log.write_text("")
+        env = {**os.environ, "PATH": str(work),
+               "MISE_INSTALLED_TOOLS": json.dumps([{"name": "ruby"}]),
+               "MISE_TEST_LOG": str(log), "MISE_TEST_STATUS": "0"}
+        result = subprocess.run([shell, "-c", hook], env=env, text=True, capture_output=True)
+        assert result.returncode == 127 and "jq is required" in result.stderr
+        assert not log.read_text()
+        env["PATH"] += os.pathsep + os.environ["PATH"]
+        env["MISE_INSTALLED_TOOLS"] = "{broken"
+        result = subprocess.run([shell, "-c", hook], env=env, text=True, capture_output=True)
+        assert result.returncode != 0 and not log.read_text(), result.stderr
+print("Mise postinstall: PASS (non-Ruby no-op, colorls rebuild, failure propagation, missing jq, malformed event; "
       + "/".join(Path(shell).name for shell in shells) + ")")

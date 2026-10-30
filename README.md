@@ -77,9 +77,9 @@ source is a seed, not a synchronized copy of the runtime data.
   mise exec -- python tests/zsh_fig_check.py
   mise exec -- python tests/hk_staging_check.py
   mise exec -- python tests/mise_postinstall_check.py
+  python3 tests/mise_host_config_check.py
   python3 tests/artifact_save_check.py
   python3 tests/zsh_plugin_bundle_check.py
-  python3 tests/artifact_save_check.py
   mise exec -- bash tests/zsh_completion_check.sh
   mise exec -- python tests/zsh_completion_ui.py
   ```
@@ -92,6 +92,16 @@ source is a seed, not a synchronized copy of the runtime data.
   opt-in to inspect your deployed shell instead.
 
 ## Runtime migration
+
+`~/.config/mise/conf.d/00-shared.toml` keeps the VPS runtime baseline. Put
+workstation-specific versions and tools in `~/.config/mise/conf.d/host.toml`,
+which stays local to each host and is
+excluded from chezmoi deployment. Install and verify new runtimes before selecting
+them there; pulling these dotfiles does not install replacements. The shared
+Ruby postinstall hook requires `jq` and fails clearly if it is unavailable.
+Keep tool selections out of the global `config.toml`: it takes precedence over
+the `conf.d` files and would prevent host-local runtime overrides.
+`mise use -g` writes to `host.toml` through `[settings.write_targets]`.
 
 Use `docs/runtime-transition.html` as the local dashboard while moving runtimes and CLI ownership to mise/uv.
 

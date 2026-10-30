@@ -8,6 +8,7 @@ docs/
 tests/
 # Repo-only hk config — global hooks live in dot_config/hk/config.pkl (~/.config/hk/)
 hk.pkl
+.config/mise/conf.d/host.toml
 
 {{ if ne .chezmoi.os "darwin" }}
 Library/LaunchAgents/dev.dotfiles.zsh-history-backup.plist

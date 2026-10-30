@@ -5,21 +5,20 @@ experimental = true
 [settings.self_update]
 auto = true
 
-[tools]
-hk = { version = "2.9.0", workflow = "release.yml" } # Pkl schema versions are pinned separately in hk configs.
-bun = "1.4.4"
-"gem:colorls" = "latest"
-node = "26"
-python = "3.15.2"
-ruby = "4.0"
-rust = { version = "stable", profile = "minimal", components = "rustfmt,clippy" }
-uv = "latest"
-oh-my-pi = { version = "18.13.2", rename_exe = "omp" }
-pi = "1.4.0"
+# `mise use -g` adds new tools to the untracked host file, not chezmoi-managed config.
+[settings.write_targets]
+tools = "~/.config/mise/conf.d/host.toml"
+
+# Runtime defaults live in conf.d/00-shared.toml so conf.d/host.toml can override them.
 
 [hooks]
 postinstall = '''
-if printf '%s\n' "$MISE_INSTALLED_TOOLS" | jq -e 'any(.name == "ruby")' >/dev/null 2>&1; then
+command -v jq >/dev/null 2>&1 || {
+  printf '%s\n' 'mise postinstall: jq is required to detect Ruby installs' >&2
+  exit 127
+}
+ruby_installed=$(printf '%s\n' "$MISE_INSTALLED_TOOLS" | jq -r 'any(.name == "ruby")') || exit $?
+if [ "$ruby_installed" = true ]; then
   mise install --force gem:colorls
 fi
 '''
