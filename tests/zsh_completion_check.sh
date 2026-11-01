@@ -8,7 +8,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 if [[ "${1:-}" == --live ]]; then
   zsh -lic '
     set -e
-    for tool in codex hunk mise uv; do
+    for tool in codex hunk jj mise uv; do
       whence -p "$tool" >/dev/null || continue
       [[ ${_comps[$tool]-} == _$tool ]]
     done
@@ -55,7 +55,7 @@ zsh -fic "
   [[ -f \"\$ZSH_CACHE_DIR/site-functions/_bd\" ]]
   [[ \${_comps[claude]-} == _gnu_generic ]]
   [[ \${_comps[composio]-} == _gnu_generic ]]
-  for tool in codex hunk mise uv; do
+  for tool in codex hunk jj mise uv; do
     whence -p \"\$tool\" >/dev/null || continue
     [[ \${_comps[\$tool]-} == _\$tool ]]
   done

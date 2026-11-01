@@ -10,13 +10,13 @@ if command -v carapace >/dev/null 2>&1; then
 fi
 
 # Prefer the installed tools' own specifications over Carapace's bundled ones.
-for _completion_tool in codex hunk mise uv; do
+for _completion_tool in codex hunk jj mise uv; do
   _completion_bin="$(whence -p "$_completion_tool")" || continue
-  if [[ $_completion_tool == uv ]]; then
-    _completion_script="$("$_completion_bin" generate-shell-completion zsh 2>/dev/null)" || continue
-  else
-    _completion_script="$("$_completion_bin" completion zsh 2>/dev/null)" || continue
-  fi
+  case $_completion_tool in
+    uv) _completion_script="$("$_completion_bin" generate-shell-completion zsh 2>/dev/null)" || continue ;;
+    jj) _completion_script="$("$_completion_bin" util completion zsh 2>/dev/null)" || continue ;;
+    *)  _completion_script="$("$_completion_bin" completion zsh 2>/dev/null)" || continue ;;
+  esac
   [[ -n $_completion_script ]] && eval "$_completion_script"
 done
 unset _completion_tool _completion_bin _completion_script
