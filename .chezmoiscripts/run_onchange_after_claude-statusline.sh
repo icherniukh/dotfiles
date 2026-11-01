@@ -2,6 +2,7 @@
 # Point Claude Code's statusLine at the chezmoi-managed ~/.claude/statusline.sh.
 # settings.json is edited in place (not managed) because Claude Code rewrites it;
 # only the statusLine key is touched. Re-runs whenever this script changes.
+# refreshInterval 1 re-renders every second so the context pulse can animate.
 set -euo pipefail
 
 settings="$HOME/.claude/settings.json"
@@ -15,12 +16,12 @@ fi
 mkdir -p "$(dirname "$settings")"
 [[ -s "$settings" ]] || echo '{}' >"$settings"
 
-current=$(jq -r '.statusLine.command // empty' "$settings")
-[[ "$current" == "$command" ]] && exit 0
+want=$(jq -nc --arg cmd "$command" '{type: "command", command: $cmd, refreshInterval: 1}')
+jq -e --argjson want "$want" '.statusLine == $want' "$settings" >/dev/null && exit 0
 
 tmp=$(mktemp "$settings.XXXXXX")
 trap 'rm -f "$tmp"' EXIT
-jq --arg cmd "$command" '.statusLine = {type: "command", command: $cmd}' "$settings" >"$tmp"
+jq --argjson want "$want" '.statusLine = $want' "$settings" >"$tmp"
 cp "$settings" "$settings.pre-statusline.bak"
 mv "$tmp" "$settings"
 trap - EXIT

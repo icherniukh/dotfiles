@@ -21,7 +21,7 @@ fi
 
 if [[ -n "$ctx_pct" ]]; then
   label=""; [[ "$show_labels" != "0" ]] && label="$(fg "$MUTED")ctx ${RESET}"
-  segments+=("${label}$(fg "$(pct_color "$ctx_pct")")${BOLD}$(pad_pct "$ctx_pct")%${RESET}")
+  segments+=("${label}$(ctx_segment)")
 fi
 
 if [[ -n "$fh_pct" ]]; then

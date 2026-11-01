@@ -7,9 +7,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/statusline-lib.sh"
 
 BAR_WIDTH=8
 
-# The three usage sections run warm -> cool as their horizon widens:
-# this session -> the next few hours -> the week.
-CTX_HUE='255;145;100'   # context window — apricot
+# The 5h and weekly sections run warm -> cool as their horizon widens. Context has its own
+# token-driven ramp and pulse (ctx_segment in statusline-lib.sh).
 FH_HUE='238;200;95'     # 5h limit — wheat gold
 WK_HUE='135;205;150'    # weekly limit — sage
 
@@ -65,7 +64,7 @@ if [[ -n "$cwd" ]]; then
   segments+=("$seg")
 fi
 
-[[ -n "$ctx_pct" ]] && segments+=("$(usage_segment "$CTX_HUE" "$ctx_pct" "")")
+[[ -n "$ctx_pct" ]] && segments+=("$(ctx_segment "$BAR_WIDTH")")
 [[ -n "$fh_pct" ]] && segments+=("$(usage_segment "$FH_HUE" "$fh_pct" "$fh_reset")")
 [[ -n "$wk_pct" ]] && segments+=("$(usage_segment "$WK_HUE" "$wk_pct" "$wk_reset")")
 

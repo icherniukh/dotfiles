@@ -3,14 +3,17 @@
 
 input=$(cat)
 
-cwd=$(jq -r '.workspace.current_dir // .cwd // empty' <<<"$input")
-model_display=$(jq -r '.model.display_name // .model.id // "model"' <<<"$input")
-effort=$(jq -r '.effort.level // empty' <<<"$input")
-ctx_pct=$(jq -r '.context_window.used_percentage // empty' <<<"$input")
-fh_pct=$(jq -r '.rate_limits.five_hour.used_percentage // empty' <<<"$input")
-fh_reset=$(jq -r '.rate_limits.five_hour.resets_at // empty' <<<"$input")
-wk_pct=$(jq -r '.rate_limits.seven_day.used_percentage // empty' <<<"$input")
-wk_reset=$(jq -r '.rate_limits.seven_day.resets_at // empty' <<<"$input")
+# One jq call: the statusline re-runs every second (refreshInterval). \x1f keeps empty fields.
+IFS=$'\x1f' read -r cwd model_display effort ctx_pct ctx_tok ctx_size fh_pct fh_reset wk_pct wk_reset < <(
+  jq -r '[(.workspace.current_dir // .cwd // ""), (.model.display_name // .model.id // "model"),
+    (.effort.level // ""), (.context_window.used_percentage // ""),
+    ((.context_window.current_usage // null) | if . then (.input_tokens // 0) + (.cache_creation_input_tokens // 0) + (.cache_read_input_tokens // 0) else "" end),
+    (.context_window.context_window_size // ""),
+    (.rate_limits.five_hour.used_percentage // ""), (.rate_limits.five_hour.resets_at // ""),
+    (.rate_limits.seven_day.used_percentage // ""), (.rate_limits.seven_day.resets_at // "")]
+    | map(tostring) | join("\u001f")' <<<"$input")
+[[ -z "$ctx_tok" && -n "$ctx_pct" && -n "$ctx_size" ]] && ctx_tok=$(( ${ctx_pct%%.*} * ctx_size / 100 ))
+ctx_tok=${ctx_tok:-0}
 
 CYAN='0;225;255'       # path — vivid cyan
 BRANCH='190;140;255'   # git branch — soft violet
@@ -18,6 +21,8 @@ MUTED='140;146;158'    # separators, time-left
 GOOD='40;255;120'      # vivid green
 WARN='255;150;20'      # vivid orange
 BAD='255;45;85'        # vivid red/crimson
+PLUM='221;160;221'     # context % and token count
+TRACK='58;62;72'       # empty part of the context bar
 
 FH_COLOR='255;196;0'    # 5h % — vivid gold
 WK_COLOR='48;140;255'   # weekly % — vivid blue
@@ -26,12 +31,69 @@ RESET=$'\033[0m'
 BOLD=$'\033[1m'
 fg() { printf '\033[38;2;%sm' "$1"; }
 
-pct_color() {
-  local ipct=${1%%.*}; ipct=${ipct:-0}
-  if (( ipct >= 80 )); then printf '%s' "$BAD"
-  elif (( ipct >= 50 )); then printf '%s' "$WARN"
-  else printf '%s' "$GOOD"
+# lerp A B X0 X1 X -> integer A..B as X goes X0..X1
+lerp() { echo $(( $1 + ($2 - $1) * ($5 - $3) / ($4 - $3) )); }
+
+# Context tokens -> RGB: green until 75k, lime, yellow, orange at 175k, red at 250k.
+CTX_T=(0 75000 108000 142000 175000 250000)
+CTX_C=("$GOOD" "$GOOD" '170;255;0' '255;225;0' "$WARN" "$BAD")
+ctx_color() {
+  local t=$1 i a b
+  (( t >= CTX_T[-1] )) && { printf '%s' "${CTX_C[-1]}"; return; }
+  for ((i=1; i<${#CTX_T[@]}; i++)); do
+    (( t < CTX_T[i] )) || continue
+    IFS=';' read -ra a <<<"${CTX_C[i-1]}"; IFS=';' read -ra b <<<"${CTX_C[i]}"
+    printf '%d;%d;%d' "$(lerp "${a[0]}" "${b[0]}" "${CTX_T[i-1]}" "${CTX_T[i]}" "$t")" \
+      "$(lerp "${a[1]}" "${b[1]}" "${CTX_T[i-1]}" "${CTX_T[i]}" "$t")" \
+      "$(lerp "${a[2]}" "${b[2]}" "${CTX_T[i-1]}" "${CTX_T[i]}" "$t")"
+    return
+  done
+}
+
+# Pulse period in seconds (0 = none): 250k 20s -> 265k 10s -> 400k 4s -> 500k+ 2s.
+ctx_period() {
+  local t=$1
+  if   (( t < 250000 )); then echo 0
+  elif (( t < 265000 )); then lerp 20 10 250000 265000 "$t"
+  elif (( t < 400000 )); then lerp 10 4 265000 400000 "$t"
+  elif (( t < 500000 )); then lerp 4 2 400000 500000 "$t"
+  else echo 2
   fi
+}
+
+# WIDTH-char bar for VALUE/MAX at 1/8-cell resolution, filled in COLOR on a solid TRACK.
+# The partial cell gets a TRACK background so there's no gap; BG_RESTORE resets it after.
+PARTIAL=('' ▏ ▎ ▍ ▌ ▋ ▊ ▉)
+ctx_bar() {
+  local val=$1 max=$2 width=$3 color=$4 bg_restore=${5:-$'\033[49m'} eighths full i out=""
+  eighths=$(( val * width * 8 / max )); (( eighths > width * 8 )) && eighths=$(( width * 8 ))
+  full=$(( eighths / 8 ))
+  for ((i=0;i<full;i++)); do out+="█"; done
+  (( eighths % 8 )) && out+=$'\033[48;2;'"${TRACK}m${PARTIAL[eighths % 8]}${bg_restore}"
+  printf '%s%s%s' "$(fg "$color")" "$out" "$(fg "$TRACK")"
+  for ((i=full + (eighths % 8 > 0); i<width; i++)); do printf '█'; done
+}
+
+# "<bar> 8%·82k". Bar color ramps with tokens and is scaled to 500k (where the alarm tops out),
+# or the window if smaller; past 250k the segment pulses, faster and harder as tokens grow.
+# Optional WIDTH (default 0 = no bar, for the phone).
+ctx_segment() {
+  local width=${1:-0} color pre="" period phase flash bar="" bar_max=500000 pct_fg r g b
+  color=$(ctx_color "$ctx_tok") period=$(ctx_period "$ctx_tok")
+  if (( period > 0 )); then
+    phase=$(( EPOCHSECONDS % period ))
+    IFS=';' read -r r g b <<<"$color"
+    flash="$(( (r+255*3)/4 ));$(( (g+255*3)/4 ));$(( (b+255*3)/4 ))"
+    if (( ctx_tok >= 400000 && phase == 0 )); then
+      pre=$'\033[48;2;'"${color}m" color='255;255;255'   # intense: solid red block
+    elif (( phase == 0 || (ctx_tok >= 400000 && period > 2 && phase == 1) )); then
+      color=$flash                                         # mild flash / intense afterglow
+    fi
+  fi
+  (( ${ctx_size:-0} > 0 && ctx_size < bar_max )) && bar_max=$ctx_size
+  pct_fg=$PLUM; [[ -n "$pre" ]] && pct_fg=$color
+  (( width > 0 )) && bar="$(ctx_bar "$ctx_tok" "$bar_max" "$width" "$color" "$pre") "
+  printf '%s' "${pre}${bar}$(fg "$pct_fg")${BOLD}$(printf '%d' "${ctx_pct%%.*}")%${RESET}${pre}$(fg "$MUTED")·$(fg "$pct_fg")$(( (ctx_tok + 500) / 1000 ))k${RESET}"
 }
 
 # Model family -> fixed hue, spread across distinct vivid hues.
